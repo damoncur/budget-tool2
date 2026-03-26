@@ -1,4 +1,4 @@
-// src/views/incomeView.js
+// src/views/expenseView.js
 
 function escapeHtml(value) {
   const str = String(value);
@@ -10,8 +10,8 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderHomePage(incomeCategories, totalMonthly) {
-  const rows = incomeCategories
+function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
+  const rows = expenseCategories
     .map(
       (item) => `
       <tr>
@@ -24,37 +24,43 @@ function renderHomePage(incomeCategories, totalMonthly) {
     )
     .join('');
 
+  const typeOptions = expenseTypes
+    .map(
+      (t) =>
+        `<option value="${escapeHtml(t.value)}">${escapeHtml(t.label)}</option>`
+    )
+    .join('\n                  ');
+
   return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Budget Manager - Income</title>
+      <title>Budget Manager - Expenses</title>
       <link rel="stylesheet" href="/styles.css" />
     </head>
     <body>
       <nav class="nav-bar">
-        <a href="/" class="active">Income</a>
-        <a href="/expenses">Expenses</a>
+        <a href="/">Income</a>
+        <a href="/expenses" class="active">Expenses</a>
       </nav>
       <main>
-        <h1>Monthly Income</h1>
+        <h1>Monthly Expenses</h1>
 
         <section class="card">
-          <h2>Add Income Category</h2>
-          <form method="POST" action="/income-categories">
+          <h2>Add Expense Category</h2>
+          <form method="POST" action="/expense-categories">
             <div class="form-row">
               <div class="field">
                 <label for="name">Category Name</label>
-                <input id="name" name="name" type="text" placeholder="e.g. Main Job" required />
+                <input id="name" name="name" type="text" placeholder="e.g. Rent" required />
               </div>
 
               <div class="field">
-                <label for="type">Income Type</label>
+                <label for="type">Expense Frequency</label>
                 <select id="type" name="type" required>
-                  <option value="biweekly-salary">Biweekly Salary</option>
-                  <option value="monthly-deposit">Monthly Deposit (Not Salary)</option>
+                  ${typeOptions}
                 </select>
               </div>
 
@@ -65,31 +71,31 @@ function renderHomePage(incomeCategories, totalMonthly) {
             </div>
 
             <p class="note">
-              Biweekly salary is converted to monthly using 26 pay periods per year.
+              All amounts are converted to their monthly equivalent for budgeting.
             </p>
 
-            <button type="submit">Add Income Category</button>
+            <button type="submit">Add Expense Category</button>
           </form>
         </section>
 
         <section class="card">
-          <h2>Income Categories</h2>
+          <h2>Expense Categories</h2>
           <table>
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Type</th>
+                <th>Frequency</th>
                 <th>Entered Amount</th>
                 <th>Monthly Equivalent</th>
               </tr>
             </thead>
             <tbody>
-              ${rows || '<tr><td colspan="5">No income categories added yet.</td></tr>'}
+              ${rows || '<tr><td colspan="5">No expense categories added yet.</td></tr>'}
             </tbody>
           </table>
 
-          <div class="summary">Total Monthly Income: $${totalMonthly.toFixed(2)}</div>
+          <div class="summary">Total Monthly Expenses: $${totalMonthly.toFixed(2)}</div>
         </section>
       </main>
     </body>
@@ -98,5 +104,5 @@ function renderHomePage(incomeCategories, totalMonthly) {
 }
 
 module.exports = {
-  renderHomePage,
+  renderExpensePage,
 };
