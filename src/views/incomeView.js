@@ -17,7 +17,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
       (item) => {
         const isAssetWithdrawal = item.type === 'asset-withdrawal';
         const enteredAmount = isAssetWithdrawal
-          ? `$${item.amount.toFixed(2)}/${item.withdrawalFrequency === 'biweekly' ? 'biweekly' : 'mo'} (from $${item.assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} asset)`
+          ? `$${item.amount.toFixed(2)}/${item.withdrawalFrequency} (from $${item.assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} asset)`
           : `$${item.amount.toFixed(2)}`;
         const rateDetails = isAssetWithdrawal
           ? `<div class="rate-details">Growth: ${(item.growthRate * 100).toFixed(1)}% | Withdrawal: ${(item.withdrawalRate * 100).toFixed(1)}% | Net: ${(item.netRate * 100).toFixed(1)}%</div>`
@@ -90,6 +90,8 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
                 <select id="type" name="type" required>
                   <option value="biweekly-salary">Biweekly Salary</option>
                   <option value="monthly-deposit">Monthly Deposit (Not Salary)</option>
+                  <option value="quarterly-deposit">Quarterly Deposit</option>
+                  <option value="yearly-deposit">Yearly Deposit</option>
                   <option value="asset-withdrawal">Asset Withdrawal</option>
                 </select>
               </div>
@@ -115,14 +117,16 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
                   <select id="withdrawalFrequency" name="withdrawalFrequency">
                     <option value="monthly">Monthly</option>
                     <option value="biweekly">Biweekly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
                   </select>
                 </div>
               </div>
             </div>
 
             <p class="note">
-              Biweekly salary is converted to monthly using 26 pay periods per year.
-              For asset withdrawals, the withdrawal rate and net rate are calculated automatically from the asset value and withdrawal amount.
+              Biweekly salary uses 26 pay periods/year. Quarterly is divided by 3. Yearly is divided by 12.
+              For asset withdrawals, the withdrawal rate and net rate are calculated automatically.
             </p>
 
             <button type="submit">Add Income Category</button>
@@ -183,6 +187,8 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
 function renderEditIncomePage(item) {
   const biweeklySelected = item.type === 'biweekly-salary' ? ' selected' : '';
   const monthlySelected = item.type === 'monthly-deposit' ? ' selected' : '';
+  const quarterlySelected = item.type === 'quarterly-deposit' ? ' selected' : '';
+  const yearlySelected = item.type === 'yearly-deposit' ? ' selected' : '';
   const assetWithdrawalSelected = item.type === 'asset-withdrawal' ? ' selected' : '';
   const isAssetWithdrawal = item.type === 'asset-withdrawal';
   const amountLabel = isAssetWithdrawal ? 'Withdrawal Amount' : 'Amount';
@@ -191,6 +197,8 @@ function renderEditIncomePage(item) {
   const growthRate = isAssetWithdrawal ? (item.growthRate * 100).toFixed(2) : '';
   const freqMonthlySelected = isAssetWithdrawal && item.withdrawalFrequency === 'monthly' ? ' selected' : '';
   const freqBiweeklySelected = isAssetWithdrawal && item.withdrawalFrequency === 'biweekly' ? ' selected' : '';
+  const freqQuarterlySelected = isAssetWithdrawal && item.withdrawalFrequency === 'quarterly' ? ' selected' : '';
+  const freqYearlySelected = isAssetWithdrawal && item.withdrawalFrequency === 'yearly' ? ' selected' : '';
 
   return `
     <!DOCTYPE html>
@@ -223,6 +231,8 @@ function renderEditIncomePage(item) {
                 <select id="type" name="type" required>
                   <option value="biweekly-salary"${biweeklySelected}>Biweekly Salary</option>
                   <option value="monthly-deposit"${monthlySelected}>Monthly Deposit (Not Salary)</option>
+                  <option value="quarterly-deposit"${quarterlySelected}>Quarterly Deposit</option>
+                  <option value="yearly-deposit"${yearlySelected}>Yearly Deposit</option>
                   <option value="asset-withdrawal"${assetWithdrawalSelected}>Asset Withdrawal</option>
                 </select>
               </div>
@@ -248,6 +258,8 @@ function renderEditIncomePage(item) {
                   <select id="withdrawalFrequency" name="withdrawalFrequency">
                     <option value="monthly"${freqMonthlySelected}>Monthly</option>
                     <option value="biweekly"${freqBiweeklySelected}>Biweekly</option>
+                    <option value="quarterly"${freqQuarterlySelected}>Quarterly</option>
+                    <option value="yearly"${freqYearlySelected}>Yearly</option>
                   </select>
                 </div>
               </div>

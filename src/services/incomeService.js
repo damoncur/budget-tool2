@@ -6,6 +6,10 @@ function calculateMonthlyAmount(type, amount) {
       return (value * 26) / 12;
     case 'monthly-deposit':
       return value;
+    case 'quarterly-deposit':
+      return value / 3;
+    case 'yearly-deposit':
+      return value / 12;
     default:
       return 0;
   }
@@ -17,6 +21,10 @@ function getIncomeTypeLabel(type) {
       return 'Biweekly Salary';
     case 'monthly-deposit':
       return 'Monthly Deposit (Not Salary)';
+    case 'quarterly-deposit':
+      return 'Quarterly Deposit';
+    case 'yearly-deposit':
+      return 'Yearly Deposit';
     case 'asset-withdrawal':
       return 'Asset Withdrawal';
     default:
@@ -25,7 +33,7 @@ function getIncomeTypeLabel(type) {
 }
 
 function isValidIncomeType(type) {
-  return ['biweekly-salary', 'monthly-deposit', 'asset-withdrawal'].includes(type);
+  return ['biweekly-salary', 'monthly-deposit', 'quarterly-deposit', 'yearly-deposit', 'asset-withdrawal'].includes(type);
 }
 
 function calculateTotalMonthlyIncome(items) {
@@ -37,6 +45,8 @@ function calculateMonthlyFromFrequency(frequency, amount) {
   switch (frequency) {
     case 'biweekly': return (value * 26) / 12;
     case 'monthly': return value;
+    case 'quarterly': return value / 3;
+    case 'yearly': return value / 12;
     default: return 0;
   }
 }
@@ -47,7 +57,7 @@ function calculateWithdrawalRate(assetValue, monthlyWithdrawal) {
 }
 
 function isValidWithdrawalFrequency(freq) {
-  return ['biweekly', 'monthly'].includes(freq);
+  return ['biweekly', 'monthly', 'quarterly', 'yearly'].includes(freq);
 }
 
 module.exports = {
