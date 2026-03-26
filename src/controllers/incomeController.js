@@ -29,14 +29,51 @@ function createIncomeCategory(req, res) {
     return res.status(400).send('Amount must be a valid non-negative number.');
   }
 
-  const item = {
-    id: store.getNextId(),
-    name,
-    type,
-    typeLabel: incomeService.getIncomeTypeLabel(type),
-    amount,
-    monthlyEquivalent: incomeService.calculateMonthlyAmount(type, amount),
-  };
+  let item;
+
+  if (type === 'asset-withdrawal') {
+    const assetValue = Number(req.body.assetValue);
+    const growthRatePercent = Number(req.body.growthRate);
+    const withdrawalFrequency = req.body.withdrawalFrequency;
+
+    if (!Number.isFinite(assetValue) || assetValue <= 0) {
+      return res.status(400).send('Asset value must be a finite positive number.');
+    }
+    if (!Number.isFinite(growthRatePercent) || growthRatePercent < 0) {
+      return res.status(400).send('Growth rate must be a finite non-negative number.');
+    }
+    if (!incomeService.isValidWithdrawalFrequency(withdrawalFrequency)) {
+      return res.status(400).send('Invalid withdrawal frequency.');
+    }
+
+    const growthRateDecimal = growthRatePercent / 100;
+    const monthlyEquivalent = incomeService.calculateMonthlyFromFrequency(withdrawalFrequency, amount);
+    const withdrawalRate = incomeService.calculateWithdrawalRate(assetValue, monthlyEquivalent);
+    const netRate = growthRateDecimal - withdrawalRate;
+
+    item = {
+      id: store.getNextId(),
+      name,
+      type,
+      typeLabel: incomeService.getIncomeTypeLabel(type),
+      amount,
+      assetValue,
+      growthRate: growthRateDecimal,
+      withdrawalFrequency,
+      withdrawalRate,
+      netRate,
+      monthlyEquivalent,
+    };
+  } else {
+    item = {
+      id: store.getNextId(),
+      name,
+      type,
+      typeLabel: incomeService.getIncomeTypeLabel(type),
+      amount,
+      monthlyEquivalent: incomeService.calculateMonthlyAmount(type, amount),
+    };
+  }
 
   store.incomeCategories.push(item);
   store.save();
@@ -91,11 +128,51 @@ function updateIncomeCategory(req, res) {
     return res.status(400).send('Amount must be a valid non-negative number.');
   }
 
-  item.name = name;
-  item.type = type;
-  item.typeLabel = incomeService.getIncomeTypeLabel(type);
-  item.amount = amount;
-  item.monthlyEquivalent = incomeService.calculateMonthlyAmount(type, amount);
+  if (type === 'asset-withdrawal') {
+    const assetValue = Number(req.body.assetValue);
+    const growthRatePercent = Number(req.body.growthRate);
+    const withdrawalFrequency = req.body.withdrawalFrequency;
+
+    if (!Number.isFinite(assetValue) || assetValue <= 0) {
+      return res.status(400).send('Asset value must be a finite positive number.');
+    }
+    if (!Number.isFinite(growthRatePercent) || growthRatePercent < 0) {
+      return res.status(400).send('Growth rate must be a finite non-negative number.');
+    }
+    if (!incomeService.isValidWithdrawalFrequency(withdrawalFrequency)) {
+      return res.status(400).send('Invalid withdrawal frequency.');
+    }
+
+    const growthRateDecimal = growthRatePercent / 100;
+    const monthlyEquivalent = incomeService.calculateMonthlyFromFrequency(withdrawalFrequency, amount);
+    const withdrawalRate = incomeService.calculateWithdrawalRate(assetValue, monthlyEquivalent);
+    const netRate = growthRateDecimal - withdrawalRate;
+
+    // Mutate item only after all validation passes
+    item.name = name;
+    item.type = type;
+    item.typeLabel = incomeService.getIncomeTypeLabel(type);
+    item.amount = amount;
+    item.assetValue = assetValue;
+    item.growthRate = growthRateDecimal;
+    item.withdrawalFrequency = withdrawalFrequency;
+    item.withdrawalRate = withdrawalRate;
+    item.netRate = netRate;
+    item.monthlyEquivalent = monthlyEquivalent;
+  } else {
+    // Mutate item only after all validation passes
+    item.name = name;
+    item.type = type;
+    item.typeLabel = incomeService.getIncomeTypeLabel(type);
+    item.amount = amount;
+    item.monthlyEquivalent = incomeService.calculateMonthlyAmount(type, amount);
+    // Clear asset-withdrawal fields if type changed
+    delete item.assetValue;
+    delete item.growthRate;
+    delete item.withdrawalFrequency;
+    delete item.withdrawalRate;
+    delete item.netRate;
+  }
 
   store.save();
   res.redirect('/');
