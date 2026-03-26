@@ -208,6 +208,18 @@ function updateIncomeCategory(req, res) {
     item.depleted = simResult.depleted;
     item.monthlyEquivalent = monthlyEquivalent;
   } else {
+    // If changing from asset-withdrawal to another type, unlink big-ticket expenses
+    if (item.type === 'asset-withdrawal') {
+      for (const expense of store.bigTicketExpenses) {
+        if (expense.fundedByAssetId === id) {
+          expense.fundedByAssetId = null;
+          const freshMonths = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+          expense.monthsUntilDue = freshMonths;
+          expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, freshMonths);
+        }
+      }
+    }
+
     // Mutate item only after all validation passes
     item.name = name;
     item.type = type;

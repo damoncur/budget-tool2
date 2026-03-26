@@ -24,8 +24,9 @@ function simulateAsset(assetValue, annualGrowthRate, monthlyWithdrawal, bigTicke
     balance -= monthlyWithdrawal;
 
     // Subtract any big-ticket expenses due this month
+    // Expenses with monthsUntilDue <= 0 (current month or past due) are deducted in month 1
     for (const expense of bigTicketExpenses) {
-      if (expense.monthsUntilDue === month) {
+      if (expense.monthsUntilDue <= 0 ? month === 1 : expense.monthsUntilDue === month) {
         balance -= expense.cost;
       }
     }
