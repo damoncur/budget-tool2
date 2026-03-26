@@ -1,0 +1,52 @@
+body {
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.note {
+  color: #555;
+  margin-top: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+.summary {
+  margin-top: 16px;
+  font-weight: bold;
+  padding: 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+}
