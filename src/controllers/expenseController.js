@@ -36,6 +36,7 @@ function createExpenseCategory(req, res) {
   };
 
   store.expenseCategories.push(item);
+  store.save();
   res.redirect('/expenses');
 }
 
