@@ -9,12 +9,19 @@ let nextIncomeId = 1;
 const expenseCategories = [];
 let nextExpenseId = 1;
 
+const groupAssets = [];
+let nextGroupAssetId = 1;
+
 function getNextId() {
   return nextIncomeId++;
 }
 
 function getNextExpenseId() {
   return nextExpenseId++;
+}
+
+function getNextGroupAssetId() {
+  return nextGroupAssetId++;
 }
 
 function findIncomeById(id) {
@@ -39,6 +46,17 @@ function removeExpenseById(id) {
   return true;
 }
 
+function findGroupAssetById(id) {
+  return groupAssets.find((item) => item.id === id);
+}
+
+function removeGroupAssetById(id) {
+  const index = groupAssets.findIndex((item) => item.id === id);
+  if (index === -1) return false;
+  groupAssets.splice(index, 1);
+  return true;
+}
+
 function load() {
   try {
     if (!fs.existsSync(DATA_FILE)) {
@@ -59,11 +77,17 @@ function load() {
       data.expenseCategories.forEach((item) => expenseCategories.push(item));
     }
 
+    groupAssets.length = 0;
+    if (Array.isArray(data.groupAssets)) {
+      data.groupAssets.forEach((item) => groupAssets.push(item));
+    }
+
     nextIncomeId = data.nextIncomeId || 1;
     nextExpenseId = data.nextExpenseId || 1;
+    nextGroupAssetId = data.nextGroupAssetId || 1;
 
     console.log(
-      `Loaded ${incomeCategories.length} income and ${expenseCategories.length} expense categories from ${DATA_FILE}`
+      `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense categories, and ${groupAssets.length} group assets from ${DATA_FILE}`
     );
   } catch (err) {
     console.error('Failed to load data file:', err.message);
@@ -80,8 +104,10 @@ function save() {
     const data = {
       incomeCategories,
       expenseCategories,
+      groupAssets,
       nextIncomeId,
       nextExpenseId,
+      nextGroupAssetId,
     };
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -96,10 +122,14 @@ module.exports = {
   getNextId,
   expenseCategories,
   getNextExpenseId,
+  groupAssets,
+  getNextGroupAssetId,
   findIncomeById,
   removeIncomeById,
   findExpenseById,
   removeExpenseById,
+  findGroupAssetById,
+  removeGroupAssetById,
   load,
   save,
 };

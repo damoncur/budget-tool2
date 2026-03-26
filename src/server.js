@@ -4,6 +4,7 @@ const path = require('path');
 const store = require('./data/store');
 const incomeRoutes = require('./routes/incomeRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const groupAssetRoutes = require('./routes/groupAssetRoutes');
 
 const app = express();
 const port = 3000;
@@ -17,6 +18,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use('/', incomeRoutes);
 app.use('/', expenseRoutes);
+app.use('/', groupAssetRoutes);
 
 // Save data on shutdown
 function shutdown(signal) {
