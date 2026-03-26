@@ -12,6 +12,9 @@ let nextExpenseId = 1;
 const groupAssets = [];
 let nextGroupAssetId = 1;
 
+const bigTicketExpenses = [];
+let nextBigTicketId = 1;
+
 function getNextId() {
   return nextIncomeId++;
 }
@@ -22,6 +25,21 @@ function getNextExpenseId() {
 
 function getNextGroupAssetId() {
   return nextGroupAssetId++;
+}
+
+function getNextBigTicketId() {
+  return nextBigTicketId++;
+}
+
+function findBigTicketById(id) {
+  return bigTicketExpenses.find((item) => item.id === id);
+}
+
+function removeBigTicketById(id) {
+  const index = bigTicketExpenses.findIndex((item) => item.id === id);
+  if (index === -1) return false;
+  bigTicketExpenses.splice(index, 1);
+  return true;
 }
 
 function findIncomeById(id) {
@@ -82,12 +100,18 @@ function load() {
       data.groupAssets.forEach((item) => groupAssets.push(item));
     }
 
+    bigTicketExpenses.length = 0;
+    if (Array.isArray(data.bigTicketExpenses)) {
+      data.bigTicketExpenses.forEach((item) => bigTicketExpenses.push(item));
+    }
+
     nextIncomeId = data.nextIncomeId || 1;
     nextExpenseId = data.nextExpenseId || 1;
     nextGroupAssetId = data.nextGroupAssetId || 1;
+    nextBigTicketId = data.nextBigTicketId || 1;
 
     console.log(
-      `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense categories, and ${groupAssets.length} group assets from ${DATA_FILE}`
+      `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense, ${bigTicketExpenses.length} big-ticket, and ${groupAssets.length} group assets from ${DATA_FILE}`
     );
   } catch (err) {
     console.error('Failed to load data file:', err.message);
@@ -105,9 +129,11 @@ function save() {
       incomeCategories,
       expenseCategories,
       groupAssets,
+      bigTicketExpenses,
       nextIncomeId,
       nextExpenseId,
       nextGroupAssetId,
+      nextBigTicketId,
     };
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -124,12 +150,16 @@ module.exports = {
   getNextExpenseId,
   groupAssets,
   getNextGroupAssetId,
+  bigTicketExpenses,
+  getNextBigTicketId,
   findIncomeById,
   removeIncomeById,
   findExpenseById,
   removeExpenseById,
   findGroupAssetById,
   removeGroupAssetById,
+  findBigTicketById,
+  removeBigTicketById,
   load,
   save,
 };

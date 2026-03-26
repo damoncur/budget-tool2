@@ -10,7 +10,7 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, groupAssets, totalGroupAssets) {
+function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, groupAssets, totalGroupAssets, bigTicketExpenses = []) {
   const netMonthly = totalMonthlyIncome - totalMonthlyExpenses;
   const incomeRows = incomeCategories
     .map(
@@ -21,13 +21,13 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
           : `$${item.amount.toFixed(2)}`;
         let durationText = '';
         if (isAssetWithdrawal) {
-          if (item.durationMonths === null) {
-            durationText = 'Indefinite (growth exceeds withdrawal)';
-          } else if (item.durationMonths === undefined) {
+          if (item.durationMonths === Infinity || item.depleted === false) {
+            durationText = '<span class="duration-indefinite">Indefinite (growth exceeds withdrawal)</span>';
+          } else if (item.durationMonths === null || item.durationMonths === undefined) {
             durationText = 'N/A (edit to calculate)';
           } else {
             const years = (item.durationMonths / 12).toFixed(1);
-            durationText = `${item.durationMonths} months (${years} yrs)`;
+            durationText = `<span class="duration-finite">${item.durationMonths} months (${years} yrs)</span>`;
           }
         }
         const rateDetails = isAssetWithdrawal
@@ -172,6 +172,8 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
             Group Assets: $${totalGroupAssets.toFixed(2)}
           </div>
         </section>
+
+        ${renderBigTicketSection(incomeCategories, bigTicketExpenses, totalMonthlyIncome)}
       </main>
       <script src="/sort.js"></script>
       <script>
@@ -193,6 +195,123 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
     </body>
     </html>
   `;
+}
+
+function renderBigTicketSection(incomeCategories, bigTicketExpenses, totalMonthlyIncome) {
+  const assetWithdrawalItems = incomeCategories.filter(i => i.type === 'asset-withdrawal');
+
+  const assetOptions = assetWithdrawalItems
+    .map(item => `<option value="${item.id}">${escapeHtml(item.name)} ($${item.assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</option>`)
+    .join('\n                        ');
+
+  const expenseRows = bigTicketExpenses
+    .map(expense => {
+      const fundedByAsset = expense.fundedByAssetId
+        ? incomeCategories.find(i => i.id === expense.fundedByAssetId)
+        : null;
+      const fundedByText = fundedByAsset
+        ? `<span class="expense-funded">Funded from ${escapeHtml(fundedByAsset.name)}</span>`
+        : 'Save from income';
+      const monthlySetAsideText = expense.monthlySetAside !== null
+        ? `$${expense.monthlySetAside.toFixed(2)}/mo`
+        : `<span class="expense-funded">Funded from asset</span>`;
+      const monthsUntilDue = expense.monthsUntilDue > 0 ? expense.monthsUntilDue : 'Past due';
+      return `
+      <tr>
+        <td>${escapeHtml(expense.name)}</td>
+        <td>$${expense.cost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        <td>${escapeHtml(expense.targetDate)}</td>
+        <td>${monthsUntilDue}</td>
+        <td>${fundedByText}</td>
+        <td>${monthlySetAsideText}</td>
+        <td class="actions">
+          <form method="POST" action="/big-ticket-expenses/${expense.id}/delete" style="display:inline">
+            <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this big ticket expense?')">Delete</button>
+          </form>
+        </td>
+      </tr>`;
+    })
+    .join('');
+
+  // Calculate total monthly set-aside for unfunded expenses
+  const totalMonthlySetAside = bigTicketExpenses
+    .filter(e => e.monthlySetAside !== null)
+    .reduce((sum, e) => sum + e.monthlySetAside, 0);
+
+  const remainingAfterSetAsides = totalMonthlyIncome - totalMonthlySetAside;
+
+  // Build asset projection summaries
+  const assetSummaries = assetWithdrawalItems
+    .map(asset => {
+      const linkedCount = bigTicketExpenses.filter(e => e.fundedByAssetId === asset.id).length;
+      let durationText;
+      if (asset.durationMonths === Infinity || asset.depleted === false) {
+        durationText = '<span class="duration-indefinite">Indefinite</span>';
+      } else if (asset.durationMonths != null) {
+        const years = (asset.durationMonths / 12).toFixed(1);
+        durationText = `<span class="duration-finite">${asset.durationMonths} months (${years} yrs)</span>`;
+      } else {
+        durationText = 'N/A';
+      }
+      return `<div class="asset-projection-summary">${escapeHtml(asset.name)}: ${durationText} (${linkedCount} linked expense${linkedCount !== 1 ? 's' : ''})</div>`;
+    })
+    .join('');
+
+  return `
+        <section class="card">
+          <h2>Big Ticket Expenses</h2>
+          <form method="POST" action="/big-ticket-expenses">
+            <div class="form-row">
+              <div class="field">
+                <label for="expense-name">Expense Name</label>
+                <input id="expense-name" name="name" type="text" placeholder="e.g. New Roof" required />
+              </div>
+              <div class="field">
+                <label for="expense-cost">Estimated Cost</label>
+                <input id="expense-cost" name="cost" type="number" step="0.01" min="0" placeholder="0.00" required />
+              </div>
+              <div class="field">
+                <label for="expense-target">Target Date (YYYY-MM)</label>
+                <input id="expense-target" name="targetDate" type="month" required />
+              </div>
+              <div class="field">
+                <label for="expense-asset">Fund From Asset</label>
+                <select id="expense-asset" name="fundedByAssetId">
+                  <option value="">None (save from income)</option>
+                  ${assetOptions}
+                </select>
+              </div>
+            </div>
+            <button type="submit">Add Big Ticket Expense</button>
+          </form>
+
+          <table>
+            <thead>
+              <tr>
+                <th data-sortable>Name</th>
+                <th data-sortable>Cost</th>
+                <th data-sortable>Target Date</th>
+                <th data-sortable>Months Until Due</th>
+                <th>Funded By</th>
+                <th data-sortable>Monthly Set-Aside</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${expenseRows || '<tr><td colspan="7">No big ticket expenses added yet.</td></tr>'}
+            </tbody>
+          </table>
+
+          <div class="summary">
+            Total Monthly Income: $${totalMonthlyIncome.toFixed(2)}
+            <span class="summary-separator">|</span>
+            Total Monthly Set-Aside (unfunded expenses): $${totalMonthlySetAside.toFixed(2)}
+            <span class="summary-separator">|</span>
+            Remaining After Set-Asides: <span class="${remainingAfterSetAsides >= 0 ? 'net-positive' : 'net-negative'}">${remainingAfterSetAsides < 0 ? '-' : ''}$${Math.abs(remainingAfterSetAsides).toFixed(2)}</span>
+          </div>
+
+          ${assetSummaries ? `<div class="summary" style="margin-top: 8px;">${assetSummaries}</div>` : ''}
+        </section>`;
 }
 
 function renderEditIncomePage(item) {
