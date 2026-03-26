@@ -5,7 +5,19 @@ const groupAssetView = require('../views/groupAssetView');
 
 function showAssetsPage(req, res) {
   const totalValue = groupAssetService.calculateTotalValue(store.groupAssets);
-  res.send(groupAssetView.renderAssetsPage(store.groupAssets, totalValue));
+  res.send(groupAssetView.renderAssetsPage(store.groupAssets, totalValue, null));
+}
+
+function showProjection(req, res) {
+  const totalValue = groupAssetService.calculateTotalValue(store.groupAssets);
+  const monthlyWithdrawal = Number(req.body.monthlyWithdrawal);
+
+  if (!Number.isFinite(monthlyWithdrawal) || monthlyWithdrawal < 0) {
+    return res.status(400).send('Monthly withdrawal must be a valid non-negative number.');
+  }
+
+  const projections = groupAssetService.calculateProjections(totalValue, monthlyWithdrawal);
+  res.send(groupAssetView.renderAssetsPage(store.groupAssets, totalValue, { monthlyWithdrawal, projections }));
 }
 
 function createGroupAsset(req, res) {
@@ -92,6 +104,7 @@ function getGroupAssetsApi(req, res) {
 
 module.exports = {
   showAssetsPage,
+  showProjection,
   createGroupAsset,
   deleteGroupAsset,
   showEditAssetPage,

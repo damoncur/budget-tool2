@@ -10,7 +10,48 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderAssetsPage(groupAssets, totalValue) {
+function renderProjectionResults(projection) {
+  if (!projection) return '';
+
+  const { monthlyWithdrawal, projections } = projection;
+  const scenarios = ['conservative', 'average', 'aggressive'];
+
+  const resultRows = scenarios
+    .map((key) => {
+      const p = projections[key];
+      const duration = p.neverDepletes
+        ? '<span class="net-positive">Never depletes</span>'
+        : `${p.years} year${p.years !== 1 ? 's' : ''}${p.remainingMonths > 0 ? `, ${p.remainingMonths} month${p.remainingMonths !== 1 ? 's' : ''}` : ''}`;
+      const ratePercent = (p.rate * 100).toFixed(0);
+      return `
+        <tr>
+          <td>${p.label} (${ratePercent}%)</td>
+          <td>${duration}</td>
+          <td>${p.neverDepletes ? '-' : p.months}</td>
+        </tr>`;
+    })
+    .join('');
+
+  return `
+        <section class="card">
+          <h2>Projection Results</h2>
+          <p>With a monthly withdrawal of <strong>$${monthlyWithdrawal.toFixed(2)}</strong>:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Growth Scenario</th>
+                <th>Duration</th>
+                <th>Total Months</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${resultRows}
+            </tbody>
+          </table>
+        </section>`;
+}
+
+function renderAssetsPage(groupAssets, totalValue, projection) {
   const rows = groupAssets
     .map(
       (item) => `
@@ -87,6 +128,27 @@ function renderAssetsPage(groupAssets, totalValue) {
 
           <div class="summary">Total Asset Value: $${totalValue.toFixed(2)}</div>
         </section>
+
+        <section class="card">
+          <h2>Withdrawal Projection</h2>
+          <form method="POST" action="/assets/projection">
+            <div class="form-row">
+              <div class="field">
+                <label for="monthlyWithdrawal">Monthly Withdrawal Amount</label>
+                <input id="monthlyWithdrawal" name="monthlyWithdrawal" type="number" step="0.01" min="0" placeholder="0.00" value="${projection ? projection.monthlyWithdrawal.toFixed(2) : ''}" required />
+              </div>
+            </div>
+
+            <p class="note">
+              Calculate how long your total assets ($${totalValue.toFixed(2)}) will last at three growth rates:
+              Conservative (3%), Average (6%), Aggressive (10%).
+            </p>
+
+            <button type="submit">Calculate Projection</button>
+          </form>
+        </section>
+
+        ${renderProjectionResults(projection)}
       </main>
       <script src="/sort.js"></script>
     </body>
