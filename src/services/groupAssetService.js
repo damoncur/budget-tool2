@@ -21,7 +21,7 @@ function calculateDepletionMonths(totalValue, monthlyWithdrawal, annualRate) {
   }
 
   if (totalValue <= 0) {
-    return { months: 0, years: 0, neverDepletes: false };
+    return { months: 0, years: 0, remainingMonths: 0, neverDepletes: false };
   }
 
   const monthlyRate = annualRate / 12;
