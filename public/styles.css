@@ -95,6 +95,19 @@ th.sort-desc .sort-arrow {
   border-radius: 8px;
 }
 
+.summary-separator {
+  margin: 0 12px;
+  color: #ccc;
+}
+
+.net-positive {
+  color: #16a34a;
+}
+
+.net-negative {
+  color: #dc2626;
+}
+
 .actions {
   white-space: nowrap;
 }

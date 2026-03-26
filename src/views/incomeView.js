@@ -10,7 +10,8 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderHomePage(incomeCategories, totalMonthly) {
+function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses) {
+  const netMonthly = totalMonthlyIncome - totalMonthlyExpenses;
   const rows = incomeCategories
     .map(
       (item) => `
@@ -96,7 +97,13 @@ function renderHomePage(incomeCategories, totalMonthly) {
             </tbody>
           </table>
 
-          <div class="summary">Total Monthly Income: $${totalMonthly.toFixed(2)}</div>
+          <div class="summary">
+            Total Monthly Income: $${totalMonthlyIncome.toFixed(2)}
+            <span class="summary-separator">|</span>
+            Total Monthly Expenses: $${totalMonthlyExpenses.toFixed(2)}
+            <span class="summary-separator">|</span>
+            Net Monthly: <span class="${netMonthly >= 0 ? 'net-positive' : 'net-negative'}">$${netMonthly.toFixed(2)}</span>
+          </div>
         </section>
       </main>
       <script src="/sort.js"></script>
