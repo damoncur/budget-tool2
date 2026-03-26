@@ -3,13 +3,35 @@ const store = require('../data/store');
 const incomeService = require('../services/incomeService');
 const expenseService = require('../services/expenseService');
 const groupAssetService = require('../services/groupAssetService');
+const projectionService = require('../services/projectionService');
+const bigTicketService = require('../services/bigTicketService');
 const incomeView = require('../views/incomeView');
 
 function showHomePage(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
   const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
   const totalGroupAssets = groupAssetService.calculateTotalValue(store.groupAssets);
-  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets));
+
+  // Recalculate duration for each asset-withdrawal item with linked big-ticket expenses
+  const assetItems = store.incomeCategories.filter(i => i.type === 'asset-withdrawal');
+  for (const asset of assetItems) {
+    const linkedExpenses = store.bigTicketExpenses
+      .filter(e => e.fundedByAssetId === asset.id)
+      .map(e => ({ cost: e.cost, monthsUntilDue: bigTicketService.calculateMonthsUntilDue(e.targetDate) }));
+    const result = projectionService.simulateAsset(asset.assetValue, asset.growthRate, asset.monthlyEquivalent, linkedExpenses);
+    asset.durationMonths = result.durationMonths;
+    asset.depleted = result.depleted;
+  }
+
+  // Recalculate monthsUntilDue and monthlySetAside for each big-ticket expense
+  for (const expense of store.bigTicketExpenses) {
+    expense.monthsUntilDue = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+    if (expense.fundedByAssetId === null) {
+      expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, expense.monthsUntilDue);
+    }
+  }
+
+  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses));
 }
 
 function createIncomeCategory(req, res) {
@@ -51,7 +73,8 @@ function createIncomeCategory(req, res) {
     const withdrawalRate = incomeService.calculateWithdrawalRate(assetValue, monthlyEquivalent);
     const netRate = growthRateDecimal - withdrawalRate;
 
-    const durationMonths = incomeService.calculateAssetDurationMonths(assetValue, growthRateDecimal, monthlyEquivalent);
+    // Initial simulation with no linked big-ticket expenses (they get linked after creation)
+    const simResult = projectionService.simulateAsset(assetValue, growthRateDecimal, monthlyEquivalent, []);
 
     item = {
       id: store.getNextId(),
@@ -64,7 +87,8 @@ function createIncomeCategory(req, res) {
       withdrawalFrequency,
       withdrawalRate,
       netRate,
-      durationMonths,
+      durationMonths: simResult.durationMonths,
+      depleted: simResult.depleted,
       monthlyEquivalent,
     };
   } else {
@@ -89,11 +113,25 @@ function deleteIncomeCategory(req, res) {
     return res.status(400).send('Invalid ID.');
   }
 
-  const removed = store.removeIncomeById(id);
-  if (!removed) {
+  // Check if this is an asset-withdrawal before removing — need to unlink big-ticket expenses
+  const item = store.findIncomeById(id);
+  if (!item) {
     return res.status(404).send('Income category not found.');
   }
 
+  // If deleting an asset-withdrawal, convert linked big-ticket expenses to unfunded
+  if (item.type === 'asset-withdrawal') {
+    for (const expense of store.bigTicketExpenses) {
+      if (expense.fundedByAssetId === id) {
+        expense.fundedByAssetId = null;
+        const freshMonths = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+        expense.monthsUntilDue = freshMonths;
+        expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, freshMonths);
+      }
+    }
+  }
+
+  store.removeIncomeById(id);
   store.save();
   res.redirect('/');
 }
@@ -152,7 +190,10 @@ function updateIncomeCategory(req, res) {
     const netRate = growthRateDecimal - withdrawalRate;
 
     // Mutate item only after all validation passes
-    const durationMonths = incomeService.calculateAssetDurationMonths(assetValue, growthRateDecimal, monthlyEquivalent);
+    const linkedExpenses = store.bigTicketExpenses
+      .filter(e => e.fundedByAssetId === id)
+      .map(e => ({ cost: e.cost, monthsUntilDue: bigTicketService.calculateMonthsUntilDue(e.targetDate) }));
+    const simResult = projectionService.simulateAsset(assetValue, growthRateDecimal, monthlyEquivalent, linkedExpenses);
 
     item.name = name;
     item.type = type;
@@ -163,9 +204,22 @@ function updateIncomeCategory(req, res) {
     item.withdrawalFrequency = withdrawalFrequency;
     item.withdrawalRate = withdrawalRate;
     item.netRate = netRate;
-    item.durationMonths = durationMonths;
+    item.durationMonths = simResult.durationMonths;
+    item.depleted = simResult.depleted;
     item.monthlyEquivalent = monthlyEquivalent;
   } else {
+    // If changing from asset-withdrawal to another type, unlink big-ticket expenses
+    if (item.type === 'asset-withdrawal') {
+      for (const expense of store.bigTicketExpenses) {
+        if (expense.fundedByAssetId === id) {
+          expense.fundedByAssetId = null;
+          const freshMonths = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+          expense.monthsUntilDue = freshMonths;
+          expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, freshMonths);
+        }
+      }
+    }
+
     // Mutate item only after all validation passes
     item.name = name;
     item.type = type;
@@ -179,6 +233,7 @@ function updateIncomeCategory(req, res) {
     delete item.withdrawalRate;
     delete item.netRate;
     delete item.durationMonths;
+    delete item.depleted;
   }
 
   store.save();
@@ -188,9 +243,29 @@ function updateIncomeCategory(req, res) {
 function getIncomeCategoriesApi(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
 
+  // Recalculate duration for asset-withdrawal items
+  const assetItems = store.incomeCategories.filter(i => i.type === 'asset-withdrawal');
+  for (const asset of assetItems) {
+    const linkedExpenses = store.bigTicketExpenses
+      .filter(e => e.fundedByAssetId === asset.id)
+      .map(e => ({ cost: e.cost, monthsUntilDue: bigTicketService.calculateMonthsUntilDue(e.targetDate) }));
+    const result = projectionService.simulateAsset(asset.assetValue, asset.growthRate, asset.monthlyEquivalent, linkedExpenses);
+    asset.durationMonths = result.durationMonths;
+    asset.depleted = result.depleted;
+  }
+
+  // Recalculate monthsUntilDue and monthlySetAside for each big-ticket expense
+  for (const expense of store.bigTicketExpenses) {
+    expense.monthsUntilDue = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+    if (expense.fundedByAssetId === null) {
+      expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, expense.monthsUntilDue);
+    }
+  }
+
   res.json({
     items: store.incomeCategories,
     totalMonthlyIncome,
+    bigTicketExpenses: store.bigTicketExpenses,
   });
 }
 

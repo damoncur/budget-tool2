@@ -172,3 +172,21 @@ th.sort-desc .sort-arrow {
   color: #555;
   line-height: 1.4;
 }
+
+.expense-funded {
+  color: #666;
+  font-style: italic;
+}
+
+.duration-indefinite {
+  color: #2a7;
+}
+
+.duration-finite {
+  color: #a72;
+}
+
+.asset-projection-summary {
+  margin: 4px 0;
+  font-size: 13px;
+}
