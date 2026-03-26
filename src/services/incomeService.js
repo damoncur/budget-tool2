@@ -61,13 +61,13 @@ function isValidWithdrawalFrequency(freq) {
 }
 
 function calculateAssetDurationMonths(assetValue, annualGrowthRate, monthlyWithdrawal) {
-  if (monthlyWithdrawal <= 0) return Infinity;
+  if (monthlyWithdrawal <= 0) return null;
   const r = Math.pow(1 + annualGrowthRate, 1 / 12) - 1;
   if (r <= 0) {
     return Math.ceil(assetValue / monthlyWithdrawal);
   }
   if (monthlyWithdrawal <= assetValue * r) {
-    return Infinity;
+    return null;
   }
   return Math.ceil(-Math.log(1 - (assetValue * r) / monthlyWithdrawal) / Math.log(1 + r));
 }

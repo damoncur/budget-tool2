@@ -21,8 +21,10 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
           : `$${item.amount.toFixed(2)}`;
         let durationText = '';
         if (isAssetWithdrawal) {
-          if (item.durationMonths === Infinity || item.durationMonths === null || item.durationMonths === undefined) {
+          if (item.durationMonths === null) {
             durationText = 'Indefinite (growth exceeds withdrawal)';
+          } else if (item.durationMonths === undefined) {
+            durationText = 'N/A (edit to calculate)';
           } else {
             const years = (item.durationMonths / 12).toFixed(1);
             durationText = `${item.durationMonths} months (${years} yrs)`;
