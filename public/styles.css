@@ -68,6 +68,25 @@ th {
   background: #f0f0f0;
 }
 
+th[data-sortable] {
+  cursor: pointer;
+  user-select: none;
+}
+
+th[data-sortable]:hover {
+  background: #e0e0e0;
+}
+
+.sort-arrow {
+  font-size: 12px;
+  color: #999;
+}
+
+th.sort-asc .sort-arrow,
+th.sort-desc .sort-arrow {
+  color: #333;
+}
+
 .summary {
   margin-top: 16px;
   font-weight: bold;

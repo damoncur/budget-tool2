@@ -89,11 +89,11 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Frequency</th>
-                <th>Entered Amount</th>
-                <th>Monthly Equivalent</th>
+                <th data-sortable>ID</th>
+                <th data-sortable>Name</th>
+                <th data-sortable>Frequency</th>
+                <th data-sortable>Entered Amount</th>
+                <th data-sortable>Monthly Equivalent</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -105,6 +105,7 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
           <div class="summary">Total Monthly Expenses: $${totalMonthly.toFixed(2)}</div>
         </section>
       </main>
+      <script src="/sort.js"></script>
     </body>
     </html>
   `;
