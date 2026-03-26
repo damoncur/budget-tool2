@@ -17,6 +17,28 @@ function getNextExpenseId() {
   return nextExpenseId++;
 }
 
+function findIncomeById(id) {
+  return incomeCategories.find((item) => item.id === id);
+}
+
+function removeIncomeById(id) {
+  const index = incomeCategories.findIndex((item) => item.id === id);
+  if (index === -1) return false;
+  incomeCategories.splice(index, 1);
+  return true;
+}
+
+function findExpenseById(id) {
+  return expenseCategories.find((item) => item.id === id);
+}
+
+function removeExpenseById(id) {
+  const index = expenseCategories.findIndex((item) => item.id === id);
+  if (index === -1) return false;
+  expenseCategories.splice(index, 1);
+  return true;
+}
+
 function load() {
   try {
     if (!fs.existsSync(DATA_FILE)) {
@@ -74,6 +96,10 @@ module.exports = {
   getNextId,
   expenseCategories,
   getNextExpenseId,
+  findIncomeById,
+  removeIncomeById,
+  findExpenseById,
+  removeExpenseById,
   load,
   save,
 };

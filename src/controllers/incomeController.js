@@ -39,6 +39,64 @@ function createIncomeCategory(req, res) {
   res.redirect('/');
 }
 
+function deleteIncomeCategory(req, res) {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) {
+    return res.status(400).send('Invalid ID.');
+  }
+
+  const removed = store.removeIncomeById(id);
+  if (!removed) {
+    return res.status(404).send('Income category not found.');
+  }
+
+  store.save();
+  res.redirect('/');
+}
+
+function showEditIncomePage(req, res) {
+  const id = Number(req.params.id);
+  const item = store.findIncomeById(id);
+  if (!item) {
+    return res.status(404).send('Income category not found.');
+  }
+
+  res.send(incomeView.renderEditIncomePage(item));
+}
+
+function updateIncomeCategory(req, res) {
+  const id = Number(req.params.id);
+  const item = store.findIncomeById(id);
+  if (!item) {
+    return res.status(404).send('Income category not found.');
+  }
+
+  const name = (req.body.name || '').trim();
+  const type = req.body.type;
+  const amount = Number(req.body.amount);
+
+  if (!name) {
+    return res.status(400).send('Category name is required.');
+  }
+
+  if (!incomeService.isValidIncomeType(type)) {
+    return res.status(400).send('Invalid income type.');
+  }
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return res.status(400).send('Amount must be a valid non-negative number.');
+  }
+
+  item.name = name;
+  item.type = type;
+  item.typeLabel = incomeService.getIncomeTypeLabel(type);
+  item.amount = amount;
+  item.monthlyEquivalent = incomeService.calculateMonthlyAmount(type, amount);
+
+  store.save();
+  res.redirect('/');
+}
+
 function getIncomeCategoriesApi(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
 
@@ -51,5 +109,8 @@ function getIncomeCategoriesApi(req, res) {
 module.exports = {
   showHomePage,
   createIncomeCategory,
+  deleteIncomeCategory,
+  showEditIncomePage,
+  updateIncomeCategory,
   getIncomeCategoriesApi,
 };
