@@ -128,11 +128,6 @@ function updateIncomeCategory(req, res) {
     return res.status(400).send('Amount must be a valid non-negative number.');
   }
 
-  item.name = name;
-  item.type = type;
-  item.typeLabel = incomeService.getIncomeTypeLabel(type);
-  item.amount = amount;
-
   if (type === 'asset-withdrawal') {
     const assetValue = Number(req.body.assetValue);
     const growthRatePercent = Number(req.body.growthRate);
@@ -153,6 +148,11 @@ function updateIncomeCategory(req, res) {
     const withdrawalRate = incomeService.calculateWithdrawalRate(assetValue, monthlyEquivalent);
     const netRate = growthRateDecimal - withdrawalRate;
 
+    // Mutate item only after all validation passes
+    item.name = name;
+    item.type = type;
+    item.typeLabel = incomeService.getIncomeTypeLabel(type);
+    item.amount = amount;
     item.assetValue = assetValue;
     item.growthRate = growthRateDecimal;
     item.withdrawalFrequency = withdrawalFrequency;
@@ -160,6 +160,11 @@ function updateIncomeCategory(req, res) {
     item.netRate = netRate;
     item.monthlyEquivalent = monthlyEquivalent;
   } else {
+    // Mutate item only after all validation passes
+    item.name = name;
+    item.type = type;
+    item.typeLabel = incomeService.getIncomeTypeLabel(type);
+    item.amount = amount;
     item.monthlyEquivalent = incomeService.calculateMonthlyAmount(type, amount);
     // Clear asset-withdrawal fields if type changed
     delete item.assetValue;
