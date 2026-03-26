@@ -60,6 +60,18 @@ function isValidWithdrawalFrequency(freq) {
   return ['biweekly', 'monthly', 'quarterly', 'yearly'].includes(freq);
 }
 
+function calculateAssetDurationMonths(assetValue, annualGrowthRate, monthlyWithdrawal) {
+  if (monthlyWithdrawal <= 0) return Infinity;
+  const r = Math.pow(1 + annualGrowthRate, 1 / 12) - 1;
+  if (r <= 0) {
+    return Math.ceil(assetValue / monthlyWithdrawal);
+  }
+  if (monthlyWithdrawal <= assetValue * r) {
+    return Infinity;
+  }
+  return Math.ceil(-Math.log(1 - (assetValue * r) / monthlyWithdrawal) / Math.log(1 + r));
+}
+
 module.exports = {
   calculateMonthlyAmount,
   getIncomeTypeLabel,
@@ -68,4 +80,5 @@ module.exports = {
   calculateMonthlyFromFrequency,
   calculateWithdrawalRate,
   isValidWithdrawalFrequency,
+  calculateAssetDurationMonths,
 };

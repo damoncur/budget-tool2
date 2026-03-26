@@ -19,8 +19,17 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
         const enteredAmount = isAssetWithdrawal
           ? `$${item.amount.toFixed(2)}/${item.withdrawalFrequency} (from $${item.assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} asset)`
           : `$${item.amount.toFixed(2)}`;
+        let durationText = '';
+        if (isAssetWithdrawal) {
+          if (item.durationMonths === Infinity || item.durationMonths === null || item.durationMonths === undefined) {
+            durationText = 'Indefinite (growth exceeds withdrawal)';
+          } else {
+            const years = (item.durationMonths / 12).toFixed(1);
+            durationText = `${item.durationMonths} months (${years} yrs)`;
+          }
+        }
         const rateDetails = isAssetWithdrawal
-          ? `<div class="rate-details">Growth: ${(item.growthRate * 100).toFixed(1)}% | Withdrawal: ${(item.withdrawalRate * 100).toFixed(1)}% | Net: ${(item.netRate * 100).toFixed(1)}%</div>`
+          ? `<div class="rate-details">Growth: ${(item.growthRate * 100).toFixed(1)}% | Withdrawal: ${(item.withdrawalRate * 100).toFixed(1)}% | Net: ${(item.netRate * 100).toFixed(1)}% | Duration: ${durationText}</div>`
           : '';
         return `
       <tr>
@@ -126,7 +135,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
 
             <p class="note">
               Biweekly salary uses 26 pay periods/year. Quarterly is divided by 3. Yearly is divided by 12.
-              For asset withdrawals, the withdrawal rate and net rate are calculated automatically.
+              For asset withdrawals, the withdrawal rate, net rate, and duration are calculated automatically.
             </p>
 
             <button type="submit">Add Income Category</button>
