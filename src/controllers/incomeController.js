@@ -23,6 +23,14 @@ function showHomePage(req, res) {
     asset.depleted = result.depleted;
   }
 
+  // Recalculate monthsUntilDue and monthlySetAside for each big-ticket expense
+  for (const expense of store.bigTicketExpenses) {
+    expense.monthsUntilDue = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+    if (expense.fundedByAssetId === null) {
+      expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, expense.monthsUntilDue);
+    }
+  }
+
   res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses));
 }
 
@@ -105,11 +113,25 @@ function deleteIncomeCategory(req, res) {
     return res.status(400).send('Invalid ID.');
   }
 
-  const removed = store.removeIncomeById(id);
-  if (!removed) {
+  // Check if this is an asset-withdrawal before removing — need to unlink big-ticket expenses
+  const item = store.findIncomeById(id);
+  if (!item) {
     return res.status(404).send('Income category not found.');
   }
 
+  // If deleting an asset-withdrawal, convert linked big-ticket expenses to unfunded
+  if (item.type === 'asset-withdrawal') {
+    for (const expense of store.bigTicketExpenses) {
+      if (expense.fundedByAssetId === id) {
+        expense.fundedByAssetId = null;
+        const freshMonths = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+        expense.monthsUntilDue = freshMonths;
+        expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, freshMonths);
+      }
+    }
+  }
+
+  store.removeIncomeById(id);
   store.save();
   res.redirect('/');
 }
@@ -199,6 +221,7 @@ function updateIncomeCategory(req, res) {
     delete item.withdrawalRate;
     delete item.netRate;
     delete item.durationMonths;
+    delete item.depleted;
   }
 
   store.save();
@@ -217,6 +240,14 @@ function getIncomeCategoriesApi(req, res) {
     const result = projectionService.simulateAsset(asset.assetValue, asset.growthRate, asset.monthlyEquivalent, linkedExpenses);
     asset.durationMonths = result.durationMonths;
     asset.depleted = result.depleted;
+  }
+
+  // Recalculate monthsUntilDue and monthlySetAside for each big-ticket expense
+  for (const expense of store.bigTicketExpenses) {
+    expense.monthsUntilDue = bigTicketService.calculateMonthsUntilDue(expense.targetDate);
+    if (expense.fundedByAssetId === null) {
+      expense.monthlySetAside = bigTicketService.calculateMonthlySetAside(expense.cost, expense.monthsUntilDue);
+    }
   }
 
   res.json({
