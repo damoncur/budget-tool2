@@ -161,3 +161,13 @@ th.sort-desc .sort-arrow {
 .btn-cancel:hover {
   background: #4b5563;
 }
+
+#asset-fields {
+  margin-top: 12px;
+}
+
+.rate-details {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #555;
+}

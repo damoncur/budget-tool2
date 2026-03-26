@@ -14,20 +14,29 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
   const netMonthly = totalMonthlyIncome - totalMonthlyExpenses;
   const incomeRows = incomeCategories
     .map(
-      (item) => `
+      (item) => {
+        const isAssetWithdrawal = item.type === 'asset-withdrawal';
+        const enteredAmount = isAssetWithdrawal
+          ? `$${item.amount.toFixed(2)}/${item.withdrawalFrequency === 'biweekly' ? 'biweekly' : 'mo'} (from $${item.assetValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} asset)`
+          : `$${item.amount.toFixed(2)}`;
+        const rateDetails = isAssetWithdrawal
+          ? `<div class="rate-details">Growth: ${(item.growthRate * 100).toFixed(1)}% | Withdrawal: ${(item.withdrawalRate * 100).toFixed(1)}% | Net: ${(item.netRate * 100).toFixed(1)}%</div>`
+          : '';
+        return `
       <tr>
         <td>${item.id}</td>
         <td>${escapeHtml(item.name)}</td>
         <td>${escapeHtml(item.typeLabel)}</td>
-        <td>$${item.amount.toFixed(2)}</td>
-        <td>$${item.monthlyEquivalent.toFixed(2)}</td>
+        <td>${enteredAmount}</td>
+        <td>$${item.monthlyEquivalent.toFixed(2)}${rateDetails}</td>
         <td class="actions">
           <a href="/income-categories/${item.id}/edit" class="btn btn-edit">Edit</a>
           <form method="POST" action="/income-categories/${item.id}/delete" style="display:inline">
             <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this income category?')">Delete</button>
           </form>
         </td>
-      </tr>`
+      </tr>`;
+      }
     )
     .join('');
 
@@ -81,6 +90,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
                 <select id="type" name="type" required>
                   <option value="biweekly-salary">Biweekly Salary</option>
                   <option value="monthly-deposit">Monthly Deposit (Not Salary)</option>
+                  <option value="asset-withdrawal">Asset Withdrawal</option>
                 </select>
               </div>
 
@@ -90,8 +100,29 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
               </div>
             </div>
 
+            <div id="asset-fields" style="display:none;">
+              <div class="form-row">
+                <div class="field">
+                  <label for="assetValue">Asset Value</label>
+                  <input id="assetValue" name="assetValue" type="number" step="0.01" min="0" placeholder="0.00" />
+                </div>
+                <div class="field">
+                  <label for="growthRate">Annual Growth Rate (%)</label>
+                  <input id="growthRate" name="growthRate" type="number" step="0.01" min="0" placeholder="7.0" />
+                </div>
+                <div class="field">
+                  <label for="withdrawalFrequency">Withdrawal Frequency</label>
+                  <select id="withdrawalFrequency" name="withdrawalFrequency">
+                    <option value="monthly">Monthly</option>
+                    <option value="biweekly">Biweekly</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <p class="note">
               Biweekly salary is converted to monthly using 26 pay periods per year.
+              For asset withdrawals, the withdrawal rate and net rate are calculated automatically from the asset value and withdrawal amount.
             </p>
 
             <button type="submit">Add Income Category</button>
@@ -128,6 +159,22 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
         </section>
       </main>
       <script src="/sort.js"></script>
+      <script>
+        const typeSelect = document.getElementById('type');
+        const assetFields = document.getElementById('asset-fields');
+        const amountLabel = document.querySelector('label[for="amount"]');
+        if (typeSelect && assetFields && amountLabel) {
+          typeSelect.addEventListener('change', function() {
+            if (this.value === 'asset-withdrawal') {
+              assetFields.style.display = 'block';
+              amountLabel.textContent = 'Withdrawal Amount';
+            } else {
+              assetFields.style.display = 'none';
+              amountLabel.textContent = 'Amount';
+            }
+          });
+        }
+      </script>
     </body>
     </html>
   `;
@@ -136,6 +183,14 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
 function renderEditIncomePage(item) {
   const biweeklySelected = item.type === 'biweekly-salary' ? ' selected' : '';
   const monthlySelected = item.type === 'monthly-deposit' ? ' selected' : '';
+  const assetWithdrawalSelected = item.type === 'asset-withdrawal' ? ' selected' : '';
+  const isAssetWithdrawal = item.type === 'asset-withdrawal';
+  const amountLabel = isAssetWithdrawal ? 'Withdrawal Amount' : 'Amount';
+  const assetFieldsDisplay = isAssetWithdrawal ? 'block' : 'none';
+  const assetValue = isAssetWithdrawal ? item.assetValue.toFixed(2) : '';
+  const growthRate = isAssetWithdrawal ? (item.growthRate * 100).toFixed(2) : '';
+  const freqMonthlySelected = isAssetWithdrawal && item.withdrawalFrequency === 'monthly' ? ' selected' : '';
+  const freqBiweeklySelected = isAssetWithdrawal && item.withdrawalFrequency === 'biweekly' ? ' selected' : '';
 
   return `
     <!DOCTYPE html>
@@ -168,12 +223,33 @@ function renderEditIncomePage(item) {
                 <select id="type" name="type" required>
                   <option value="biweekly-salary"${biweeklySelected}>Biweekly Salary</option>
                   <option value="monthly-deposit"${monthlySelected}>Monthly Deposit (Not Salary)</option>
+                  <option value="asset-withdrawal"${assetWithdrawalSelected}>Asset Withdrawal</option>
                 </select>
               </div>
 
               <div class="field">
-                <label for="amount">Amount</label>
+                <label for="amount">${amountLabel}</label>
                 <input id="amount" name="amount" type="number" step="0.01" min="0" value="${item.amount.toFixed(2)}" required />
+              </div>
+            </div>
+
+            <div id="asset-fields" style="display:${assetFieldsDisplay};">
+              <div class="form-row">
+                <div class="field">
+                  <label for="assetValue">Asset Value</label>
+                  <input id="assetValue" name="assetValue" type="number" step="0.01" min="0" value="${assetValue}" placeholder="0.00" />
+                </div>
+                <div class="field">
+                  <label for="growthRate">Annual Growth Rate (%)</label>
+                  <input id="growthRate" name="growthRate" type="number" step="0.01" min="0" value="${growthRate}" placeholder="7.0" />
+                </div>
+                <div class="field">
+                  <label for="withdrawalFrequency">Withdrawal Frequency</label>
+                  <select id="withdrawalFrequency" name="withdrawalFrequency">
+                    <option value="monthly"${freqMonthlySelected}>Monthly</option>
+                    <option value="biweekly"${freqBiweeklySelected}>Biweekly</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -182,6 +258,22 @@ function renderEditIncomePage(item) {
           </form>
         </section>
       </main>
+      <script>
+        const typeSelect = document.getElementById('type');
+        const assetFields = document.getElementById('asset-fields');
+        const amountLabel = document.querySelector('label[for="amount"]');
+        if (typeSelect && assetFields && amountLabel) {
+          typeSelect.addEventListener('change', function() {
+            if (this.value === 'asset-withdrawal') {
+              assetFields.style.display = 'block';
+              amountLabel.textContent = 'Withdrawal Amount';
+            } else {
+              assetFields.style.display = 'none';
+              amountLabel.textContent = 'Amount';
+            }
+          });
+        }
+      </script>
     </body>
     </html>
   `;
