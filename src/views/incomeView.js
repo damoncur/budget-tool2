@@ -83,11 +83,11 @@ function renderHomePage(incomeCategories, totalMonthly) {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Entered Amount</th>
-                <th>Monthly Equivalent</th>
+                <th data-sortable>ID</th>
+                <th data-sortable>Name</th>
+                <th data-sortable>Type</th>
+                <th data-sortable>Entered Amount</th>
+                <th data-sortable>Monthly Equivalent</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -99,6 +99,7 @@ function renderHomePage(incomeCategories, totalMonthly) {
           <div class="summary">Total Monthly Income: $${totalMonthly.toFixed(2)}</div>
         </section>
       </main>
+      <script src="/sort.js"></script>
     </body>
     </html>
   `;
