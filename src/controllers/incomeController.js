@@ -51,6 +51,8 @@ function createIncomeCategory(req, res) {
     const withdrawalRate = incomeService.calculateWithdrawalRate(assetValue, monthlyEquivalent);
     const netRate = growthRateDecimal - withdrawalRate;
 
+    const durationMonths = incomeService.calculateAssetDurationMonths(assetValue, growthRateDecimal, monthlyEquivalent);
+
     item = {
       id: store.getNextId(),
       name,
@@ -62,6 +64,7 @@ function createIncomeCategory(req, res) {
       withdrawalFrequency,
       withdrawalRate,
       netRate,
+      durationMonths,
       monthlyEquivalent,
     };
   } else {
@@ -149,6 +152,8 @@ function updateIncomeCategory(req, res) {
     const netRate = growthRateDecimal - withdrawalRate;
 
     // Mutate item only after all validation passes
+    const durationMonths = incomeService.calculateAssetDurationMonths(assetValue, growthRateDecimal, monthlyEquivalent);
+
     item.name = name;
     item.type = type;
     item.typeLabel = incomeService.getIncomeTypeLabel(type);
@@ -158,6 +163,7 @@ function updateIncomeCategory(req, res) {
     item.withdrawalFrequency = withdrawalFrequency;
     item.withdrawalRate = withdrawalRate;
     item.netRate = netRate;
+    item.durationMonths = durationMonths;
     item.monthlyEquivalent = monthlyEquivalent;
   } else {
     // Mutate item only after all validation passes
@@ -172,6 +178,7 @@ function updateIncomeCategory(req, res) {
     delete item.withdrawalFrequency;
     delete item.withdrawalRate;
     delete item.netRate;
+    delete item.durationMonths;
   }
 
   store.save();
