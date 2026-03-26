@@ -2,12 +2,14 @@
 const store = require('../data/store');
 const incomeService = require('../services/incomeService');
 const expenseService = require('../services/expenseService');
+const groupAssetService = require('../services/groupAssetService');
 const incomeView = require('../views/incomeView');
 
 function showHomePage(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
   const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
-  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses));
+  const totalGroupAssets = groupAssetService.calculateTotalValue(store.groupAssets);
+  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets));
 }
 
 function createIncomeCategory(req, res) {

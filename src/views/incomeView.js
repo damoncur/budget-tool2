@@ -10,9 +10,9 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses) {
+function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, groupAssets, totalGroupAssets) {
   const netMonthly = totalMonthlyIncome - totalMonthlyExpenses;
-  const rows = incomeCategories
+  const incomeRows = incomeCategories
     .map(
       (item) => `
       <tr>
@@ -30,6 +30,24 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
       </tr>`
     )
     .join('');
+
+  const assetRows = groupAssets
+    .map(
+      (item) => `
+      <tr class="asset-row">
+        <td>${item.id}</td>
+        <td>${escapeHtml(item.name)}</td>
+        <td>Group Asset</td>
+        <td>$${item.currentValue.toFixed(2)}</td>
+        <td>-</td>
+        <td class="actions">
+          <a href="/assets" class="btn btn-edit">View</a>
+        </td>
+      </tr>`
+    )
+    .join('');
+
+  const rows = incomeRows + assetRows;
 
   return `
     <!DOCTYPE html>
@@ -104,6 +122,8 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
             Total Monthly Expenses: $${totalMonthlyExpenses.toFixed(2)}
             <span class="summary-separator">|</span>
             Net Monthly: <span class="${netMonthly >= 0 ? 'net-positive' : 'net-negative'}">${netMonthly < 0 ? '-' : ''}$${Math.abs(netMonthly).toFixed(2)}</span>
+            <span class="summary-separator">|</span>
+            Group Assets: $${totalGroupAssets.toFixed(2)}
           </div>
         </section>
       </main>
