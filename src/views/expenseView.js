@@ -50,6 +50,7 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
       <nav class="nav-bar">
         <a href="/">Income</a>
         <a href="/expenses" class="active">Expenses</a>
+        <a href="/assets">Assets</a>
       </nav>
       <main>
         <h1>Monthly Expenses</h1>
@@ -132,6 +133,7 @@ function renderEditExpensePage(item, expenseTypes) {
       <nav class="nav-bar">
         <a href="/">Income</a>
         <a href="/expenses" class="active">Expenses</a>
+        <a href="/assets">Assets</a>
       </nav>
       <main>
         <h1>Edit Expense Category</h1>
