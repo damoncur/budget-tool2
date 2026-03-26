@@ -1,3 +1,8 @@
+const fs = require('fs');
+const path = require('path');
+
+const DATA_FILE = path.join(__dirname, '..', '..', 'data', 'budget-data.json');
+
 const incomeCategories = [];
 let nextIncomeId = 1;
 
@@ -12,9 +17,63 @@ function getNextExpenseId() {
   return nextExpenseId++;
 }
 
+function load() {
+  try {
+    if (!fs.existsSync(DATA_FILE)) {
+      console.log('No data file found, starting with empty data.');
+      return;
+    }
+
+    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+    const data = JSON.parse(raw);
+
+    incomeCategories.length = 0;
+    if (Array.isArray(data.incomeCategories)) {
+      data.incomeCategories.forEach((item) => incomeCategories.push(item));
+    }
+
+    expenseCategories.length = 0;
+    if (Array.isArray(data.expenseCategories)) {
+      data.expenseCategories.forEach((item) => expenseCategories.push(item));
+    }
+
+    nextIncomeId = data.nextIncomeId || 1;
+    nextExpenseId = data.nextExpenseId || 1;
+
+    console.log(
+      `Loaded ${incomeCategories.length} income and ${expenseCategories.length} expense categories from ${DATA_FILE}`
+    );
+  } catch (err) {
+    console.error('Failed to load data file:', err.message);
+  }
+}
+
+function save() {
+  try {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const data = {
+      incomeCategories,
+      expenseCategories,
+      nextIncomeId,
+      nextExpenseId,
+    };
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    console.log(`Data saved to ${DATA_FILE}`);
+  } catch (err) {
+    console.error('Failed to save data file:', err.message);
+  }
+}
+
 module.exports = {
   incomeCategories,
   getNextId,
   expenseCategories,
   getNextExpenseId,
+  load,
+  save,
 };

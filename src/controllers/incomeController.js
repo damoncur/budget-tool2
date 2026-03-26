@@ -35,6 +35,7 @@ function createIncomeCategory(req, res) {
   };
 
   store.incomeCategories.push(item);
+  store.save();
   res.redirect('/');
 }
 

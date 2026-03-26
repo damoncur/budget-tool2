@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Package lock
 package-lock.json
+
+# App data
+/data/
