@@ -108,6 +108,11 @@ th.sort-desc .sort-arrow {
   color: #dc2626;
 }
 
+.asset-row {
+  background: #f0f7ff;
+  font-style: italic;
+}
+
 .actions {
   white-space: nowrap;
 }
