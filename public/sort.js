@@ -42,9 +42,6 @@
     var headers = document.querySelectorAll('th[data-sortable]');
 
     headers.forEach(function (th) {
-      th.style.cursor = 'pointer';
-      th.style.userSelect = 'none';
-
       // Add initial arrow indicator
       var arrow = document.createElement('span');
       arrow.className = 'sort-arrow';
