@@ -1,4 +1,53 @@
+// src/views/incomeView.js
+
 function escapeHtml(value) {
+  const str = String(value);
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderHomePage(incomeCategories, totalMonthly) {
+  const rows = incomeCategories
+    .map(
+      (item) => `
+      <tr>
+        <td>${item.id}</td>
+        <td>${escapeHtml(item.name)}</td>
+        <td>${escapeHtml(item.typeLabel)}</td>
+        <td>$${item.amount.toFixed(2)}</td>
+        <td>$${item.monthlyEquivalent.toFixed(2)}</td>
+      </tr>`
+    )
+    .join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Budget Manager - Income</title>
+      <link rel="stylesheet" href="/styles.css" />
+    </head>
+    <body>
+      <main>
+        <h1>Monthly Income</h1>
+
+        <section class="card">
+          <h2>Add Income Category</h2>
+          <form method="POST" action="/income-categories">
+            <div class="form-row">
+              <div class="field">
+                <label for="name">Category Name</label>
+                <input id="name" name="name" type="text" placeholder="e.g. Main Job" required />
+              </div>
+
+              <div class="field">
+                <label for="type">Income Type</label>
                 <select id="type" name="type" required>
                   <option value="biweekly-salary">Biweekly Salary</option>
                   <option value="monthly-deposit">Monthly Deposit (Not Salary)</option>
