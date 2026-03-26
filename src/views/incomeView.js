@@ -102,7 +102,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
             <span class="summary-separator">|</span>
             Total Monthly Expenses: $${totalMonthlyExpenses.toFixed(2)}
             <span class="summary-separator">|</span>
-            Net Monthly: <span class="${netMonthly >= 0 ? 'net-positive' : 'net-negative'}">$${netMonthly.toFixed(2)}</span>
+            Net Monthly: <span class="${netMonthly >= 0 ? 'net-positive' : 'net-negative'}">${netMonthly < 0 ? '-' : ''}$${Math.abs(netMonthly).toFixed(2)}</span>
           </div>
         </section>
       </main>
