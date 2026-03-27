@@ -125,7 +125,17 @@ function load() {
 
     fixedTermExpenses.length = 0;
     if (Array.isArray(data.fixedTermExpenses)) {
-      data.fixedTermExpenses.forEach((item) => fixedTermExpenses.push(item));
+      data.fixedTermExpenses.forEach((item) => {
+        // Migrate old-format items (paymentsRemaining) to new format (totalPayments + startDate)
+        if (item.paymentsRemaining !== undefined && !item.startDate) {
+          const now = new Date();
+          item.totalPayments = item.paymentsRemaining;
+          item.startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+          delete item.paymentsRemaining;
+          delete item.remainingCost;
+        }
+        fixedTermExpenses.push(item);
+      });
     }
 
     nextIncomeId = data.nextIncomeId || 1;
