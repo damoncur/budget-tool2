@@ -31,8 +31,9 @@ function showHomePage(req, res) {
     }
   }
 
-  const totalMonthlyFixedTermExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(store.fixedTermExpenses);
-  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses, store.fixedTermExpenses, totalMonthlyFixedTermExpenses));
+  const enrichedFixedTermExpenses = store.fixedTermExpenses.map(expenseService.enrichExpense);
+  const totalMonthlyFixedTermExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(enrichedFixedTermExpenses);
+  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses, enrichedFixedTermExpenses, totalMonthlyFixedTermExpenses));
 }
 
 function createIncomeCategory(req, res) {

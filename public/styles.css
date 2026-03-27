@@ -202,6 +202,11 @@ th.sort-desc .sort-arrow {
   font-size: 13px;
 }
 
+tr.matured {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
 .form-row {
   display: flex;
   gap: 16px;
