@@ -183,7 +183,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
             Total Monthly Income: $${totalMonthlyIncome.toFixed(2)}<br/>
             Total Monthly Expenses: -$${totalMonthlyExpenses.toFixed(2)}<br/>
             Total Fixed-Term Expenses: -$${totalMonthlyFixedTermExpenses.toFixed(2)}<br/>
-            <strong>Net Monthly: $${(totalMonthlyIncome - totalMonthlyExpenses - totalMonthlyFixedTermExpenses).toFixed(2)}</strong>
+            <strong>Net Monthly: <span class="${(totalMonthlyIncome - totalMonthlyExpenses - totalMonthlyFixedTermExpenses) >= 0 ? 'net-positive' : 'net-negative'}">${(totalMonthlyIncome - totalMonthlyExpenses - totalMonthlyFixedTermExpenses) < 0 ? '-' : ''}$${Math.abs(totalMonthlyIncome - totalMonthlyExpenses - totalMonthlyFixedTermExpenses).toFixed(2)}</span></strong>
           </div>
         </section>
       </main>
