@@ -31,7 +31,8 @@ function showHomePage(req, res) {
     }
   }
 
-  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses));
+  const totalMonthlyFixedTermExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(store.fixedTermExpenses);
+  res.send(incomeView.renderHomePage(store.incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, store.groupAssets, totalGroupAssets, store.bigTicketExpenses, store.fixedTermExpenses, totalMonthlyFixedTermExpenses));
 }
 
 function createIncomeCategory(req, res) {

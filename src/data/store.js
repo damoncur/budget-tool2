@@ -15,6 +15,9 @@ let nextGroupAssetId = 1;
 const bigTicketExpenses = [];
 let nextBigTicketId = 1;
 
+const fixedTermExpenses = [];
+let nextFixedTermId = 1;
+
 function getNextId() {
   return nextIncomeId++;
 }
@@ -29,6 +32,10 @@ function getNextGroupAssetId() {
 
 function getNextBigTicketId() {
   return nextBigTicketId++;
+}
+
+function getNextFixedTermId() {
+  return nextFixedTermId++;
 }
 
 function findBigTicketById(id) {
@@ -75,6 +82,17 @@ function removeGroupAssetById(id) {
   return true;
 }
 
+function findFixedTermById(id) {
+  return fixedTermExpenses.find((item) => item.id === id);
+}
+
+function removeFixedTermById(id) {
+  const index = fixedTermExpenses.findIndex((item) => item.id === id);
+  if (index === -1) return false;
+  fixedTermExpenses.splice(index, 1);
+  return true;
+}
+
 function load() {
   try {
     if (!fs.existsSync(DATA_FILE)) {
@@ -105,13 +123,19 @@ function load() {
       data.bigTicketExpenses.forEach((item) => bigTicketExpenses.push(item));
     }
 
+    fixedTermExpenses.length = 0;
+    if (Array.isArray(data.fixedTermExpenses)) {
+      data.fixedTermExpenses.forEach((item) => fixedTermExpenses.push(item));
+    }
+
     nextIncomeId = data.nextIncomeId || 1;
     nextExpenseId = data.nextExpenseId || 1;
     nextGroupAssetId = data.nextGroupAssetId || 1;
     nextBigTicketId = data.nextBigTicketId || 1;
+    nextFixedTermId = data.nextFixedTermId || 1;
 
     console.log(
-      `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense, ${bigTicketExpenses.length} big-ticket, and ${groupAssets.length} group assets from ${DATA_FILE}`
+      `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense, ${bigTicketExpenses.length} big-ticket, ${fixedTermExpenses.length} fixed-term, and ${groupAssets.length} group assets from ${DATA_FILE}`
     );
   } catch (err) {
     console.error('Failed to load data file:', err.message);
@@ -130,10 +154,12 @@ function save() {
       expenseCategories,
       groupAssets,
       bigTicketExpenses,
+      fixedTermExpenses,
       nextIncomeId,
       nextExpenseId,
       nextGroupAssetId,
       nextBigTicketId,
+      nextFixedTermId,
     };
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -160,6 +186,10 @@ module.exports = {
   removeGroupAssetById,
   findBigTicketById,
   removeBigTicketById,
+  fixedTermExpenses,
+  getNextFixedTermId,
+  findFixedTermById,
+  removeFixedTermById,
   load,
   save,
 };

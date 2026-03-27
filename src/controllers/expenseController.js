@@ -108,6 +108,39 @@ function getExpenseCategoriesApi(req, res) {
   });
 }
 
+// Fixed-term expense handlers
+
+function createFixedTermExpense(req, res) {
+  const name = (req.body.name || '').trim();
+  const monthlyPayment = Number(req.body.monthlyPayment);
+  const paymentsRemaining = Number(req.body.paymentsRemaining);
+
+  const validation = expenseService.isValidFixedTermExpenseInput(name, monthlyPayment, paymentsRemaining);
+  if (!validation.valid) {
+    return res.status(400).send(validation.message);
+  }
+
+  const item = {
+    id: store.getNextFixedTermId(),
+    name,
+    monthlyPayment,
+    paymentsRemaining,
+    remainingCost: expenseService.calculateRemainingCost(monthlyPayment, paymentsRemaining),
+  };
+
+  store.fixedTermExpenses.push(item);
+  store.save();
+  res.redirect('/');
+}
+
+function getFixedTermExpensesApi(req, res) {
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(store.fixedTermExpenses);
+  res.json({
+    items: store.fixedTermExpenses,
+    totalMonthlyExpenses,
+  });
+}
+
 module.exports = {
   showExpensePage,
   createExpenseCategory,
@@ -115,4 +148,6 @@ module.exports = {
   showEditExpensePage,
   updateExpenseCategory,
   getExpenseCategoriesApi,
+  createFixedTermExpense,
+  getFixedTermExpensesApi,
 };
