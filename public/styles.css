@@ -204,6 +204,9 @@ th.sort-desc .sort-arrow {
 
 tr.matured {
   opacity: 0.5;
+}
+
+tr.matured td {
   text-decoration: line-through;
 }
 
