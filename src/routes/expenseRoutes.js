@@ -10,4 +10,7 @@ router.get('/expense-categories/:id/edit', expenseController.showEditExpensePage
 router.post('/expense-categories/:id/edit', expenseController.updateExpenseCategory);
 router.get('/api/expense-categories', expenseController.getExpenseCategoriesApi);
 
+router.post('/fixed-term-expenses', expenseController.createFixedTermExpense);
+router.get('/api/fixed-term-expenses', expenseController.getFixedTermExpensesApi);
+
 module.exports = router;

@@ -35,10 +35,30 @@ function getExpenseTypes() {
   }));
 }
 
+// Fixed-term expense helpers
+
+function calculateRemainingCost(monthlyPayment, paymentsRemaining) {
+  return monthlyPayment * paymentsRemaining;
+}
+
+function calculateTotalMonthlyFixedTermExpenses(items) {
+  return items.reduce((sum, item) => sum + item.monthlyPayment, 0);
+}
+
+function isValidFixedTermExpenseInput(name, monthlyPayment, paymentsRemaining) {
+  if (!name || !name.trim()) return { valid: false, message: 'Expense name is required.' };
+  if (!Number.isFinite(monthlyPayment) || monthlyPayment <= 0) return { valid: false, message: 'Monthly payment must be a positive number.' };
+  if (!Number.isInteger(paymentsRemaining) || paymentsRemaining <= 0) return { valid: false, message: 'Payments remaining must be a positive integer.' };
+  return { valid: true };
+}
+
 module.exports = {
   calculateMonthlyAmount,
   getExpenseTypeLabel,
   isValidExpenseType,
   calculateTotalMonthlyExpenses,
   getExpenseTypes,
+  calculateRemainingCost,
+  calculateTotalMonthlyFixedTermExpenses,
+  isValidFixedTermExpenseInput,
 };

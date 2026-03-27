@@ -10,7 +10,7 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, groupAssets, totalGroupAssets, bigTicketExpenses = []) {
+function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpenses, groupAssets, totalGroupAssets, bigTicketExpenses = [], fixedTermExpenses = [], totalMonthlyFixedTermExpenses = 0) {
   const netMonthly = totalMonthlyIncome - totalMonthlyExpenses;
   const incomeRows = incomeCategories
     .map(
@@ -174,6 +174,18 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
         </section>
 
         ${renderBigTicketSection(incomeCategories, bigTicketExpenses, totalMonthlyIncome)}
+
+        ${renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermExpenses)}
+
+        <section class="card">
+          <h2>Monthly Summary</h2>
+          <div class="summary">
+            Total Monthly Income: $${totalMonthlyIncome.toFixed(2)}<br/>
+            Total Monthly Expenses: -$${totalMonthlyExpenses.toFixed(2)}<br/>
+            Total Fixed-Term Expenses: -$${totalMonthlyFixedTermExpenses.toFixed(2)}<br/>
+            <strong>Net Monthly: $${(totalMonthlyIncome - totalMonthlyExpenses - totalMonthlyFixedTermExpenses).toFixed(2)}</strong>
+          </div>
+        </section>
       </main>
       <script src="/sort.js"></script>
       <script>
@@ -311,6 +323,66 @@ function renderBigTicketSection(incomeCategories, bigTicketExpenses, totalMonthl
           </div>
 
           ${assetSummaries ? `<div class="summary" style="margin-top: 8px;">${assetSummaries}</div>` : ''}
+        </section>`;
+}
+
+function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermExpenses) {
+  const expenseRows = fixedTermExpenses
+    .map(
+      (item) => {
+        const maturesIn = item.paymentsRemaining > 12
+          ? `${item.paymentsRemaining} months (${(item.paymentsRemaining / 12).toFixed(1)} years)`
+          : `${item.paymentsRemaining} months`;
+        return `
+      <tr>
+        <td>${item.id}</td>
+        <td>${escapeHtml(item.name)}</td>
+        <td>$${item.monthlyPayment.toFixed(2)}</td>
+        <td>${item.paymentsRemaining}</td>
+        <td>$${item.remainingCost.toFixed(2)}</td>
+        <td>${maturesIn}</td>
+      </tr>`;
+      }
+    )
+    .join('');
+
+  return `
+        <section class="card">
+          <h2>Fixed-Term Expenses</h2>
+          <form method="POST" action="/fixed-term-expenses">
+            <div class="form-row">
+              <div class="field">
+                <label for="expense-name">Name</label>
+                <input id="expense-name" name="name" type="text" placeholder="e.g. Car Lease" required />
+              </div>
+              <div class="field">
+                <label for="expense-payment">Monthly Payment</label>
+                <input id="expense-payment" name="monthlyPayment" type="number" step="0.01" min="0" placeholder="0.00" required />
+              </div>
+              <div class="field">
+                <label for="expense-remaining">Payments Remaining</label>
+                <input id="expense-remaining" name="paymentsRemaining" type="number" min="1" step="1" placeholder="24" required />
+              </div>
+            </div>
+            <button type="submit">Add Fixed-Term Expense</button>
+          </form>
+
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Monthly Payment</th>
+                <th>Payments Remaining</th>
+                <th>Remaining Cost</th>
+                <th>Matures In</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${expenseRows || '<tr><td colspan="6">No fixed-term expenses added yet.</td></tr>'}
+            </tbody>
+          </table>
+          <div class="summary">Total Monthly Expenses: $${totalMonthlyFixedTermExpenses.toFixed(2)}</div>
         </section>`;
 }
 
