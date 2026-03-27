@@ -350,20 +350,20 @@ function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermE
           <form method="POST" action="/fixed-term-expenses">
             <div class="form-row">
               <div class="field">
-                <label for="expense-name">Name</label>
-                <input id="expense-name" name="name" type="text" placeholder="e.g. Car Lease" required />
+                <label for="fixed-term-name">Name</label>
+                <input id="fixed-term-name" name="name" type="text" placeholder="e.g. Car Lease" required />
               </div>
               <div class="field">
-                <label for="expense-payment">Monthly Payment</label>
-                <input id="expense-payment" name="monthlyPayment" type="number" step="0.01" min="0.01" placeholder="0.00" required />
+                <label for="fixed-term-payment">Monthly Payment</label>
+                <input id="fixed-term-payment" name="monthlyPayment" type="number" step="0.01" min="0.01" placeholder="0.00" required />
               </div>
               <div class="field">
-                <label for="expense-total">Total Payments</label>
-                <input id="expense-total" name="totalPayments" type="number" min="1" step="1" placeholder="36" required />
+                <label for="fixed-term-total">Total Payments</label>
+                <input id="fixed-term-total" name="totalPayments" type="number" min="1" step="1" placeholder="36" required />
               </div>
               <div class="field">
-                <label for="expense-start">Start Date</label>
-                <input id="expense-start" name="startDate" type="month" required />
+                <label for="fixed-term-start">Start Date</label>
+                <input id="fixed-term-start" name="startDate" type="month" required />
               </div>
             </div>
             <button type="submit">Add Fixed-Term Expense</button>
