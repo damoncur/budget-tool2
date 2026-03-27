@@ -1,6 +1,13 @@
 body {
 }
 
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .nav-bar {
   display: flex;
   gap: 16px;
@@ -27,22 +34,26 @@ body {
 }
 
 label {
-  display: block;
+  display: inline-block;
   font-weight: bold;
-  margin-bottom: 6px;
+  margin-bottom: 0;
+  min-width: 120px;
+  flex-shrink: 0;
 }
 
 input,
-select,
-button {
-  width: 100%;
-  padding: 10px;
+select {
+  flex: 1;
+  padding: 6px 8px;
   font-size: 14px;
   box-sizing: border-box;
+  width: auto;
 }
 
 button {
-  margin-top: 12px;
+  width: auto;
+  padding: 8px 20px;
+  margin-top: 8px;
   cursor: pointer;
 }
 
@@ -60,7 +71,7 @@ table {
 th,
 td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 6px 8px;
   text-align: left;
 }
 
@@ -189,4 +200,15 @@ th.sort-desc .sort-arrow {
 .asset-projection-summary {
   margin: 4px 0;
   font-size: 13px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-row .field {
+  flex: 1;
+  min-width: 200px;
 }
