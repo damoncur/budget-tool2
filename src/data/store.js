@@ -124,6 +124,7 @@ function load() {
     }
 
     fixedTermExpenses.length = 0;
+    let needsMigration = false;
     if (Array.isArray(data.fixedTermExpenses)) {
       data.fixedTermExpenses.forEach((item) => {
         // Migrate old-format items (paymentsRemaining) to new format (totalPayments + startDate)
@@ -133,6 +134,7 @@ function load() {
           item.startDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
           delete item.paymentsRemaining;
           delete item.remainingCost;
+          needsMigration = true;
         }
         fixedTermExpenses.push(item);
       });
@@ -147,6 +149,11 @@ function load() {
     console.log(
       `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense, ${bigTicketExpenses.length} big-ticket, ${fixedTermExpenses.length} fixed-term, and ${groupAssets.length} group assets from ${DATA_FILE}`
     );
+
+    if (needsMigration) {
+      console.log('Migrated old-format fixed-term expenses to new schema. Persisting...');
+      save();
+    }
   } catch (err) {
     console.error('Failed to load data file:', err.message);
   }
