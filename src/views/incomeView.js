@@ -352,16 +352,16 @@ function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermE
           <form method="POST" action="/fixed-term-expenses">
             <div class="form-row">
               <div class="field">
-                <label for="expense-name">Name</label>
-                <input id="expense-name" name="name" type="text" placeholder="e.g. Car Lease" required />
+                <label for="fixed-term-name">Name</label>
+                <input id="fixed-term-name" name="name" type="text" placeholder="e.g. Car Lease" required />
               </div>
               <div class="field">
-                <label for="expense-payment">Monthly Payment</label>
-                <input id="expense-payment" name="monthlyPayment" type="number" step="0.01" min="0" placeholder="0.00" required />
+                <label for="fixed-term-payment">Monthly Payment</label>
+                <input id="fixed-term-payment" name="monthlyPayment" type="number" step="0.01" min="0" placeholder="0.00" required />
               </div>
               <div class="field">
-                <label for="expense-remaining">Payments Remaining</label>
-                <input id="expense-remaining" name="paymentsRemaining" type="number" min="1" step="1" placeholder="24" required />
+                <label for="fixed-term-remaining">Payments Remaining</label>
+                <input id="fixed-term-remaining" name="paymentsRemaining" type="number" min="1" step="1" placeholder="24" required />
               </div>
             </div>
             <button type="submit">Add Fixed-Term Expense</button>
