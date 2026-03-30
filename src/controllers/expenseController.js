@@ -36,12 +36,12 @@ function createExpenseCategory(req, res) {
     termMonths = Number(req.body.termMonths);
     startDate = (req.body.startDate || '').trim();
 
-    if (!Number.isFinite(termMonths) || termMonths <= 0) {
-      return res.status(400).send('Term months must be a positive number for fixed-term expenses.');
+    if (!Number.isInteger(termMonths) || termMonths <= 0) {
+      return res.status(400).send('Term months must be a positive integer for fixed-term expenses.');
     }
 
-    if (!startDate || isNaN(new Date(startDate).getTime())) {
-      return res.status(400).send('A valid start date is required for fixed-term expenses.');
+    if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || isNaN(new Date(startDate).getTime())) {
+      return res.status(400).send('A valid start date (YYYY-MM-DD) is required for fixed-term expenses.');
     }
   }
 
@@ -120,12 +120,12 @@ function updateExpenseCategory(req, res) {
     termMonths = Number(req.body.termMonths);
     startDate = (req.body.startDate || '').trim();
 
-    if (!Number.isFinite(termMonths) || termMonths <= 0) {
-      return res.status(400).send('Term months must be a positive number for fixed-term expenses.');
+    if (!Number.isInteger(termMonths) || termMonths <= 0) {
+      return res.status(400).send('Term months must be a positive integer for fixed-term expenses.');
     }
 
-    if (!startDate || isNaN(new Date(startDate).getTime())) {
-      return res.status(400).send('A valid start date is required for fixed-term expenses.');
+    if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || isNaN(new Date(startDate).getTime())) {
+      return res.status(400).send('A valid start date (YYYY-MM-DD) is required for fixed-term expenses.');
     }
   }
 
