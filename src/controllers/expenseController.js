@@ -26,13 +26,35 @@ function createExpenseCategory(req, res) {
     return res.status(400).send('Amount must be a valid non-negative number.');
   }
 
+  let termMonths = null;
+  let remainingMonths = null;
+
+  if (type === 'fixed-term') {
+    termMonths = Number(req.body.termMonths);
+    remainingMonths = Number(req.body.remainingMonths);
+
+    if (!Number.isInteger(termMonths) || termMonths <= 0) {
+      return res.status(400).send('Term months must be a positive integer.');
+    }
+
+    if (!Number.isInteger(remainingMonths) || remainingMonths < 0 || remainingMonths > termMonths) {
+      return res.status(400).send('Remaining months must be between 0 and term months.');
+    }
+  }
+
+  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
+
   const item = {
     id: store.getNextExpenseId(),
     name,
     type,
     typeLabel: expenseService.getExpenseTypeLabel(type),
     amount,
-    monthlyEquivalent: expenseService.calculateMonthlyAmount(type, amount),
+    monthlyAmount,
+    monthlyEquivalent: monthlyAmount,
+    termMonths: type === 'fixed-term' ? termMonths : null,
+    remainingMonths: type === 'fixed-term' ? remainingMonths : null,
+    totalRemaining: type === 'fixed-term' ? amount * remainingMonths : null,
   };
 
   store.expenseCategories.push(item);
@@ -89,11 +111,33 @@ function updateExpenseCategory(req, res) {
     return res.status(400).send('Amount must be a valid non-negative number.');
   }
 
+  let termMonths = null;
+  let remainingMonths = null;
+
+  if (type === 'fixed-term') {
+    termMonths = Number(req.body.termMonths);
+    remainingMonths = Number(req.body.remainingMonths);
+
+    if (!Number.isInteger(termMonths) || termMonths <= 0) {
+      return res.status(400).send('Term months must be a positive integer.');
+    }
+
+    if (!Number.isInteger(remainingMonths) || remainingMonths < 0 || remainingMonths > termMonths) {
+      return res.status(400).send('Remaining months must be between 0 and term months.');
+    }
+  }
+
+  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
+
   item.name = name;
   item.type = type;
   item.typeLabel = expenseService.getExpenseTypeLabel(type);
   item.amount = amount;
-  item.monthlyEquivalent = expenseService.calculateMonthlyAmount(type, amount);
+  item.monthlyAmount = monthlyAmount;
+  item.monthlyEquivalent = monthlyAmount;
+  item.termMonths = type === 'fixed-term' ? termMonths : null;
+  item.remainingMonths = type === 'fixed-term' ? remainingMonths : null;
+  item.totalRemaining = type === 'fixed-term' ? amount * remainingMonths : null;
 
   store.save();
   res.redirect('/expenses');

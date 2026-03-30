@@ -6,6 +6,7 @@ const EXPENSE_TYPES = {
   monthly: { label: 'Monthly', factor: 1 },
   quarterly: { label: 'Quarterly', factor: 1 / 3 },
   yearly: { label: 'Yearly (Annual)', factor: 1 / 12 },
+  'fixed-term': { label: 'Fixed Term', factor: 1 },
 };
 
 function calculateMonthlyAmount(type, amount) {
@@ -25,7 +26,7 @@ function isValidExpenseType(type) {
 }
 
 function calculateTotalMonthlyExpenses(items) {
-  return items.reduce((sum, item) => sum + item.monthlyEquivalent, 0);
+  return items.reduce((sum, item) => sum + (item.monthlyAmount !== undefined ? item.monthlyAmount : item.monthlyEquivalent), 0);
 }
 
 function getExpenseTypes() {
