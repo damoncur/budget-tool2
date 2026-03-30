@@ -220,3 +220,36 @@ tr.matured td {
   flex: 1;
   min-width: 200px;
 }
+
+.chart-container {
+  max-width: 900px;
+  margin: 0 auto;
+  height: 400px;
+  position: relative;
+}
+
+.forecast-controls {
+  margin-bottom: 12px;
+}
+
+.forecast-controls .field {
+  max-width: 400px;
+}
+
+.forecast-controls input[type="range"] {
+  flex: 1;
+}
+
+.forecast-controls span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
