@@ -42,7 +42,7 @@ function createExpenseCategory(req, res) {
     }
   }
 
-  const monthlyAmount = expenseService.calculateMonthlyAmount(type, amount);
+  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
 
   const item = {
     id: store.getNextExpenseId(),
@@ -127,7 +127,7 @@ function updateExpenseCategory(req, res) {
     }
   }
 
-  const monthlyAmount = expenseService.calculateMonthlyAmount(type, amount);
+  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
 
   item.name = name;
   item.type = type;
