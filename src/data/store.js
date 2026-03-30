@@ -1,4 +1,5 @@
 const incomeCategories = [];
+const expenseCategories = [];
 let nextId = 1;
 
 function getNextId() {
@@ -7,5 +8,6 @@ function getNextId() {
 
 module.exports = {
   incomeCategories,
+  expenseCategories,
   getNextId,
 };
