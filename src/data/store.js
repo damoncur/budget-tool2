@@ -18,6 +18,8 @@ let nextBigTicketId = 1;
 const fixedTermExpenses = [];
 let nextFixedTermId = 1;
 
+let startingBalance = 0;
+
 function getNextId() {
   return nextIncomeId++;
 }
@@ -133,6 +135,7 @@ function load() {
     nextGroupAssetId = data.nextGroupAssetId || 1;
     nextBigTicketId = data.nextBigTicketId || 1;
     nextFixedTermId = data.nextFixedTermId || 1;
+    startingBalance = data.startingBalance || 0;
 
     console.log(
       `Loaded ${incomeCategories.length} income, ${expenseCategories.length} expense, ${bigTicketExpenses.length} big-ticket, ${fixedTermExpenses.length} fixed-term, and ${groupAssets.length} group assets from ${DATA_FILE}`
@@ -160,6 +163,7 @@ function save() {
       nextGroupAssetId,
       nextBigTicketId,
       nextFixedTermId,
+      startingBalance,
     };
 
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -190,6 +194,8 @@ module.exports = {
   getNextFixedTermId,
   findFixedTermById,
   removeFixedTermById,
+  get startingBalance() { return startingBalance; },
+  set startingBalance(val) { startingBalance = val; },
   load,
   save,
 };
