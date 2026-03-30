@@ -9,7 +9,8 @@ const incomeView = require('../views/incomeView');
 
 function showHomePage(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
-  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
+  const enrichedExpenses = store.expenseCategories.map((item) => expenseService.enrichExpenseItem(item));
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(enrichedExpenses);
   const totalGroupAssets = groupAssetService.calculateTotalValue(store.groupAssets);
 
   // Recalculate duration for each asset-withdrawal item with linked big-ticket expenses

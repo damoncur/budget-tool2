@@ -15,20 +15,25 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
     .map(
       (item) => {
         const monthlyDisplay = item.monthlyAmount !== undefined ? item.monthlyAmount : item.monthlyEquivalent;
-        const termInfo = item.type === 'fixed-term' && item.termMonths
-          ? `${item.remainingMonths} of ${item.termMonths} months remaining`
-          : 'Ongoing';
-        const totalRemaining = item.type === 'fixed-term' && item.totalRemaining !== null
+        const startDate = item.startDate || '\u2014';
+        const term = item.termMonths != null ? item.termMonths : '\u2014';
+        const remaining = item.remainingPayments != null ? item.remainingPayments : '\u2014';
+        const totalRemaining = item.totalRemaining != null
           ? `$${item.totalRemaining.toFixed(2)}`
           : '\u2014';
+        const status = item.isComplete ? 'Complete' : 'Active';
+        const rowClass = item.isComplete ? ' class="completed"' : '';
         return `
-      <tr>
+      <tr${rowClass}>
         <td>${item.id}</td>
         <td>${escapeHtml(item.name)}</td>
         <td>${escapeHtml(item.typeLabel)}</td>
         <td>$${monthlyDisplay.toFixed(2)}</td>
-        <td>${termInfo}</td>
+        <td>${escapeHtml(startDate)}</td>
+        <td>${escapeHtml(String(term))}</td>
+        <td>${escapeHtml(String(remaining))}</td>
         <td>${totalRemaining}</td>
+        <td>${status}</td>
         <td class="actions">
           <a href="/expense-categories/${item.id}/edit" class="btn btn-edit">Edit</a>
           <form method="POST" action="/expense-categories/${item.id}/delete" style="display:inline">
@@ -55,6 +60,12 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>Budget Manager - Expenses</title>
       <link rel="stylesheet" href="/styles.css" />
+      <style>
+        tr.completed td {
+          color: #999;
+          text-decoration: line-through;
+        }
+      </style>
     </head>
     <body>
       <nav class="nav-bar">
@@ -91,19 +102,22 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
             <div id="fixed-term-fields" style="display:none;">
               <div class="form-row">
                 <div class="field">
-                  <label for="termMonths">Term Months</label>
-                  <input id="termMonths" name="termMonths" type="number" min="1" step="1" placeholder="e.g. 36" />
+                  <label for="startDate">Start Date</label>
+                  <input id="startDate" name="startDate" type="date" />
+                  <small>Only for Fixed Term expenses</small>
                 </div>
                 <div class="field">
-                  <label for="remainingMonths">Remaining Months</label>
-                  <input id="remainingMonths" name="remainingMonths" type="number" min="0" step="1" placeholder="e.g. 24" />
+                  <label for="termMonths">Term Length (Months)</label>
+                  <input id="termMonths" name="termMonths" type="number" min="1" step="1" placeholder="e.g. 60" />
+                  <small>Only for Fixed Term expenses</small>
                 </div>
               </div>
             </div>
 
             <p class="note">
               All amounts are converted to their monthly equivalent for budgeting.
-              Term Months and Remaining Months are only used for Fixed Term expenses.
+              Fixed Term expenses track remaining payments automatically from the start date and term length.
+              There is no need to enter remaining months — they are calculated for you.
             </p>
 
             <button type="submit">Add Expense Category</button>
@@ -119,17 +133,20 @@ function renderExpensePage(expenseCategories, totalMonthly, expenseTypes) {
                 <th data-sortable>Name</th>
                 <th data-sortable>Type</th>
                 <th data-sortable>Monthly Amount</th>
-                <th data-sortable>Term Info</th>
+                <th data-sortable>Start Date</th>
+                <th data-sortable>Term</th>
+                <th data-sortable>Remaining Payments</th>
                 <th data-sortable>Total Remaining</th>
+                <th data-sortable>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${rows || '<tr><td colspan="7">No expense categories added yet.</td></tr>'}
+              ${rows || '<tr><td colspan="10">No expense categories added yet.</td></tr>'}
             </tbody>
           </table>
 
-          <div class="summary">Total Monthly Expenses: $${totalMonthly.toFixed(2)}</div>
+          <div class="summary">Total Monthly Expenses (Active): $${totalMonthly.toFixed(2)}</div>
         </section>
       </main>
       <script src="/sort.js"></script>
@@ -157,7 +174,7 @@ function renderEditExpensePage(item, expenseTypes) {
 
   const isFixedTerm = item.type === 'fixed-term';
   const termMonthsValue = isFixedTerm && item.termMonths ? item.termMonths : '';
-  const remainingMonthsValue = isFixedTerm && item.remainingMonths !== null && item.remainingMonths !== undefined ? item.remainingMonths : '';
+  const startDateValue = isFixedTerm && item.startDate ? item.startDate : '';
   const fixedTermDisplay = isFixedTerm ? 'block' : 'none';
 
   return `
@@ -203,12 +220,13 @@ function renderEditExpensePage(item, expenseTypes) {
             <div id="fixed-term-fields" style="display:${fixedTermDisplay};">
               <div class="form-row">
                 <div class="field">
-                  <label for="termMonths">Term Months</label>
-                  <input id="termMonths" name="termMonths" type="number" min="1" step="1" value="${termMonthsValue}" />
+                  <label for="startDate">Start Date</label>
+                  <input id="startDate" name="startDate" type="date" value="${startDateValue}" />
+                  <small>Immutable once created</small>
                 </div>
                 <div class="field">
-                  <label for="remainingMonths">Remaining Months</label>
-                  <input id="remainingMonths" name="remainingMonths" type="number" min="0" step="1" value="${remainingMonthsValue}" />
+                  <label for="termMonths">Term Length (Months)</label>
+                  <input id="termMonths" name="termMonths" type="number" min="1" step="1" value="${termMonthsValue}" />
                 </div>
               </div>
             </div>

@@ -4,9 +4,12 @@ const expenseService = require('../services/expenseService');
 const expenseView = require('../views/expenseView');
 
 function showExpensePage(req, res) {
-  const totalMonthly = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
+  const enrichedItems = store.expenseCategories.map((item) =>
+    expenseService.enrichExpenseItem(item)
+  );
+  const totalMonthly = expenseService.calculateTotalMonthlyExpenses(enrichedItems);
   const expenseTypes = expenseService.getExpenseTypes();
-  res.send(expenseView.renderExpensePage(store.expenseCategories, totalMonthly, expenseTypes));
+  res.send(expenseView.renderExpensePage(enrichedItems, totalMonthly, expenseTypes));
 }
 
 function createExpenseCategory(req, res) {
@@ -27,22 +30,22 @@ function createExpenseCategory(req, res) {
   }
 
   let termMonths = null;
-  let remainingMonths = null;
+  let startDate = null;
 
   if (type === 'fixed-term') {
     termMonths = Number(req.body.termMonths);
-    remainingMonths = Number(req.body.remainingMonths);
+    startDate = (req.body.startDate || '').trim();
 
     if (!Number.isInteger(termMonths) || termMonths <= 0) {
-      return res.status(400).send('Term months must be a positive integer.');
+      return res.status(400).send('Term months must be a positive integer for fixed-term expenses.');
     }
 
-    if (!Number.isInteger(remainingMonths) || remainingMonths < 0 || remainingMonths > termMonths) {
-      return res.status(400).send('Remaining months must be between 0 and term months.');
+    if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || isNaN(new Date(startDate).getTime())) {
+      return res.status(400).send('A valid start date (YYYY-MM-DD) is required for fixed-term expenses.');
     }
   }
 
-  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
+  const monthlyAmount = expenseService.calculateMonthlyAmount(type, amount);
 
   const item = {
     id: store.getNextExpenseId(),
@@ -53,8 +56,7 @@ function createExpenseCategory(req, res) {
     monthlyAmount,
     monthlyEquivalent: monthlyAmount,
     termMonths: type === 'fixed-term' ? termMonths : null,
-    remainingMonths: type === 'fixed-term' ? remainingMonths : null,
-    totalRemaining: type === 'fixed-term' ? amount * remainingMonths : null,
+    startDate: type === 'fixed-term' ? startDate : null,
   };
 
   store.expenseCategories.push(item);
@@ -112,22 +114,22 @@ function updateExpenseCategory(req, res) {
   }
 
   let termMonths = null;
-  let remainingMonths = null;
+  let startDate = null;
 
   if (type === 'fixed-term') {
     termMonths = Number(req.body.termMonths);
-    remainingMonths = Number(req.body.remainingMonths);
+    startDate = (req.body.startDate || '').trim();
 
     if (!Number.isInteger(termMonths) || termMonths <= 0) {
-      return res.status(400).send('Term months must be a positive integer.');
+      return res.status(400).send('Term months must be a positive integer for fixed-term expenses.');
     }
 
-    if (!Number.isInteger(remainingMonths) || remainingMonths < 0 || remainingMonths > termMonths) {
-      return res.status(400).send('Remaining months must be between 0 and term months.');
+    if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate) || isNaN(new Date(startDate).getTime())) {
+      return res.status(400).send('A valid start date (YYYY-MM-DD) is required for fixed-term expenses.');
     }
   }
 
-  const monthlyAmount = (type === 'fixed-term' && remainingMonths === 0) ? 0 : expenseService.calculateMonthlyAmount(type, amount);
+  const monthlyAmount = expenseService.calculateMonthlyAmount(type, amount);
 
   item.name = name;
   item.type = type;
@@ -136,18 +138,20 @@ function updateExpenseCategory(req, res) {
   item.monthlyAmount = monthlyAmount;
   item.monthlyEquivalent = monthlyAmount;
   item.termMonths = type === 'fixed-term' ? termMonths : null;
-  item.remainingMonths = type === 'fixed-term' ? remainingMonths : null;
-  item.totalRemaining = type === 'fixed-term' ? amount * remainingMonths : null;
+  item.startDate = type === 'fixed-term' ? startDate : null;
 
   store.save();
   res.redirect('/expenses');
 }
 
 function getExpenseCategoriesApi(req, res) {
-  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
+  const enrichedItems = store.expenseCategories.map((item) =>
+    expenseService.enrichExpenseItem(item)
+  );
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(enrichedItems);
 
   res.json({
-    items: store.expenseCategories,
+    items: enrichedItems,
     totalMonthlyExpenses,
   });
 }

@@ -26,7 +26,9 @@ function isValidExpenseType(type) {
 }
 
 function calculateTotalMonthlyExpenses(items) {
-  return items.reduce((sum, item) => sum + (item.monthlyAmount !== undefined ? item.monthlyAmount : item.monthlyEquivalent), 0);
+  return items
+    .filter((item) => !item.isComplete)
+    .reduce((sum, item) => sum + (item.monthlyAmount !== undefined ? item.monthlyAmount : item.monthlyEquivalent), 0);
 }
 
 function getExpenseTypes() {
@@ -104,6 +106,28 @@ function isValidStartDate(startDate) {
   return month >= 1 && month <= 12 && year >= 1900 && year <= 2100;
 }
 
+/**
+ * Enrich an expense category item with computed fields.
+ * For fixed-term items with a startDate: adds remainingPayments, totalRemaining, isComplete.
+ * For monthly items: adds remainingPayments: null, totalRemaining: null, isComplete: false.
+ */
+function enrichExpenseItem(item) {
+  const enriched = { ...item };
+
+  if (item.type === 'fixed-term' && item.startDate && item.termMonths) {
+    const remaining = calculatePaymentsRemaining(item.termMonths, item.startDate);
+    enriched.remainingPayments = remaining;
+    enriched.totalRemaining = (item.monthlyAmount || item.amount) * remaining;
+    enriched.isComplete = remaining === 0;
+  } else {
+    enriched.remainingPayments = null;
+    enriched.totalRemaining = null;
+    enriched.isComplete = false;
+  }
+
+  return enriched;
+}
+
 module.exports = {
   calculateMonthlyAmount,
   getExpenseTypeLabel,
@@ -114,6 +138,7 @@ module.exports = {
   calculatePaymentsRemaining,
   calculateMaturityDate,
   enrichExpense,
+  enrichExpenseItem,
   calculateTotalMonthlyFixedTermExpenses,
   isValidStartDate,
 };
