@@ -329,20 +329,18 @@ function renderBigTicketSection(incomeCategories, bigTicketExpenses, totalMonthl
 function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermExpenses) {
   const expenseRows = fixedTermExpenses
     .map(
-      (item) => {
-        const maturesIn = item.paymentsRemaining > 12
-          ? `${item.paymentsRemaining} months (${(item.paymentsRemaining / 12).toFixed(1)} years)`
-          : `${item.paymentsRemaining} months`;
-        return `
-      <tr>
+      (item) => `
+      <tr class="${item.matured ? 'matured' : ''}">
         <td>${item.id}</td>
         <td>${escapeHtml(item.name)}</td>
         <td>$${item.monthlyPayment.toFixed(2)}</td>
+        <td>${item.startDate}</td>
+        <td>${item.totalPayments}</td>
+        <td>${item.paymentsMade}</td>
         <td>${item.paymentsRemaining}</td>
         <td>$${item.remainingCost.toFixed(2)}</td>
-        <td>${maturesIn}</td>
-      </tr>`;
-      }
+        <td>${item.matured ? 'Matured' : item.maturityDate}</td>
+      </tr>`
     )
     .join('');
 
@@ -357,11 +355,15 @@ function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermE
               </div>
               <div class="field">
                 <label for="fixed-term-payment">Monthly Payment</label>
-                <input id="fixed-term-payment" name="monthlyPayment" type="number" step="0.01" min="0" placeholder="0.00" required />
+                <input id="fixed-term-payment" name="monthlyPayment" type="number" step="0.01" min="0.01" placeholder="0.00" required />
               </div>
               <div class="field">
-                <label for="fixed-term-remaining">Payments Remaining</label>
-                <input id="fixed-term-remaining" name="paymentsRemaining" type="number" min="1" step="1" placeholder="24" required />
+                <label for="fixed-term-total">Total Payments</label>
+                <input id="fixed-term-total" name="totalPayments" type="number" min="1" step="1" placeholder="36" required />
+              </div>
+              <div class="field">
+                <label for="fixed-term-start">Start Date</label>
+                <input id="fixed-term-start" name="startDate" type="month" required />
               </div>
             </div>
             <button type="submit">Add Fixed-Term Expense</button>
@@ -373,16 +375,19 @@ function renderFixedTermExpenseSection(fixedTermExpenses, totalMonthlyFixedTermE
                 <th>ID</th>
                 <th>Name</th>
                 <th>Monthly Payment</th>
-                <th>Payments Remaining</th>
+                <th>Start Date</th>
+                <th>Total Payments</th>
+                <th>Payments Made</th>
+                <th>Remaining</th>
                 <th>Remaining Cost</th>
-                <th>Matures In</th>
+                <th>Matures</th>
               </tr>
             </thead>
             <tbody>
-              ${expenseRows || '<tr><td colspan="6">No fixed-term expenses added yet.</td></tr>'}
+              ${expenseRows || '<tr><td colspan="9">No fixed-term expenses added yet.</td></tr>'}
             </tbody>
           </table>
-          <div class="summary">Total Monthly Expenses: $${totalMonthlyFixedTermExpenses.toFixed(2)}</div>
+          <div class="summary">Total Active Monthly Expenses: $${totalMonthlyFixedTermExpenses.toFixed(2)}</div>
         </section>`;
 }
 

@@ -37,19 +37,70 @@ function getExpenseTypes() {
 
 // Fixed-term expense helpers
 
-function calculateRemainingCost(monthlyPayment, paymentsRemaining) {
-  return monthlyPayment * paymentsRemaining;
+/**
+ * Calculate how many payments have been made based on start date and current date.
+ * @param {string} startDate - YYYY-MM format
+ * @returns {number} months elapsed (minimum 0)
+ */
+function calculatePaymentsMade(startDate) {
+  const [year, month] = startDate.split('-').map(Number);
+  const now = new Date();
+  const elapsed = (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month);
+  return Math.max(0, elapsed);
 }
 
-function calculateTotalMonthlyFixedTermExpenses(items) {
-  return items.reduce((sum, item) => sum + item.monthlyPayment, 0);
+/**
+ * Calculate remaining payments.
+ */
+function calculatePaymentsRemaining(totalPayments, startDate) {
+  const made = calculatePaymentsMade(startDate);
+  return Math.max(0, totalPayments - made);
 }
 
-function isValidFixedTermExpenseInput(name, monthlyPayment, paymentsRemaining) {
-  if (!name || !name.trim()) return { valid: false, message: 'Expense name is required.' };
-  if (!Number.isFinite(monthlyPayment) || monthlyPayment <= 0) return { valid: false, message: 'Monthly payment must be a positive number.' };
-  if (!Number.isInteger(paymentsRemaining) || paymentsRemaining <= 0) return { valid: false, message: 'Payments remaining must be a positive integer.' };
-  return { valid: true };
+/**
+ * Calculate the maturity date (YYYY-MM) from start date + total payments.
+ */
+function calculateMaturityDate(startDate, totalPayments) {
+  const [year, month] = startDate.split('-').map(Number);
+  const totalMonths = (year * 12 + month - 1) + totalPayments;
+  const matYear = Math.floor(totalMonths / 12);
+  const matMonth = (totalMonths % 12) + 1;
+  return `${matYear}-${String(matMonth).padStart(2, '0')}`;
+}
+
+/**
+ * Enrich a stored expense item with derived fields based on current date.
+ * Call this at render time, not at creation time.
+ */
+function enrichExpense(item) {
+  const paymentsRemaining = calculatePaymentsRemaining(item.totalPayments, item.startDate);
+  const paymentsMade = item.totalPayments - paymentsRemaining;
+  const matured = paymentsRemaining === 0;
+  return {
+    ...item,
+    paymentsMade,
+    paymentsRemaining,
+    remainingCost: item.monthlyPayment * paymentsRemaining,
+    matured,
+    maturityDate: calculateMaturityDate(item.startDate, item.totalPayments),
+    activeMonthlyPayment: matured ? 0 : item.monthlyPayment,
+  };
+}
+
+/**
+ * Calculate total monthly expenses from enriched items (only active/non-matured).
+ */
+function calculateTotalMonthlyFixedTermExpenses(enrichedItems) {
+  return enrichedItems.reduce((sum, item) => sum + item.activeMonthlyPayment, 0);
+}
+
+/**
+ * Validate start date format (YYYY-MM).
+ */
+function isValidStartDate(startDate) {
+  if (!/^\d{4}-\d{2}$/.test(startDate)) return false;
+  const [year, month] = startDate.split('-').map(Number);
+  return month >= 1 && month <= 12 && year >= 1900 && year <= 2100;
 }
 
 module.exports = {
@@ -58,7 +109,10 @@ module.exports = {
   isValidExpenseType,
   calculateTotalMonthlyExpenses,
   getExpenseTypes,
-  calculateRemainingCost,
+  calculatePaymentsMade,
+  calculatePaymentsRemaining,
+  calculateMaturityDate,
+  enrichExpense,
   calculateTotalMonthlyFixedTermExpenses,
-  isValidFixedTermExpenseInput,
+  isValidStartDate,
 };

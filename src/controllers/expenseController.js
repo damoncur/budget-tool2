@@ -113,19 +113,32 @@ function getExpenseCategoriesApi(req, res) {
 function createFixedTermExpense(req, res) {
   const name = (req.body.name || '').trim();
   const monthlyPayment = Number(req.body.monthlyPayment);
-  const paymentsRemaining = Number(req.body.paymentsRemaining);
+  const totalPayments = Number(req.body.totalPayments);
+  const startDate = (req.body.startDate || '').trim(); // YYYY-MM format
 
-  const validation = expenseService.isValidFixedTermExpenseInput(name, monthlyPayment, paymentsRemaining);
-  if (!validation.valid) {
-    return res.status(400).send(validation.message);
+  if (!name) {
+    return res.status(400).send('Expense name is required.');
   }
 
+  if (!Number.isFinite(monthlyPayment) || monthlyPayment <= 0) {
+    return res.status(400).send('Monthly payment must be a positive number.');
+  }
+
+  if (!Number.isInteger(totalPayments) || totalPayments <= 0) {
+    return res.status(400).send('Total payments must be a positive integer.');
+  }
+
+  if (!expenseService.isValidStartDate(startDate)) {
+    return res.status(400).send('Start date must be in YYYY-MM format.');
+  }
+
+  // Store only static/immutable data — derived fields are calculated at render time
   const item = {
     id: store.getNextFixedTermId(),
     name,
     monthlyPayment,
-    paymentsRemaining,
-    remainingCost: expenseService.calculateRemainingCost(monthlyPayment, paymentsRemaining),
+    totalPayments,
+    startDate,
   };
 
   store.fixedTermExpenses.push(item);
@@ -134,9 +147,10 @@ function createFixedTermExpense(req, res) {
 }
 
 function getFixedTermExpensesApi(req, res) {
-  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(store.fixedTermExpenses);
+  const enriched = store.fixedTermExpenses.map(expenseService.enrichExpense);
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyFixedTermExpenses(enriched);
   res.json({
-    items: store.fixedTermExpenses,
+    items: enriched,
     totalMonthlyExpenses,
   });
 }
