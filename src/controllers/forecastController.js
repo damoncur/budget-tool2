@@ -7,7 +7,8 @@ const forecastView = require('../views/forecastView');
 
 function showForecastPage(req, res) {
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
-  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
+  const enrichedExpenses = store.expenseCategories.map((item) => expenseService.enrichExpenseItem(item));
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(enrichedExpenses);
   res.send(forecastView.renderForecastPage(store.startingBalance, totalMonthlyIncome, totalMonthlyExpenses));
 }
 
@@ -21,7 +22,8 @@ function getForecastApi(req, res) {
   if (!Number.isFinite(startingBalance)) startingBalance = store.startingBalance;
 
   const totalMonthlyIncome = incomeService.calculateTotalMonthlyIncome(store.incomeCategories);
-  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(store.expenseCategories);
+  const enrichedExpenses = store.expenseCategories.map((item) => expenseService.enrichExpenseItem(item));
+  const totalMonthlyExpenses = expenseService.calculateTotalMonthlyExpenses(enrichedExpenses);
 
   const result = forecastService.generateForecast(startingBalance, totalMonthlyIncome, totalMonthlyExpenses, years);
   res.json(result);
