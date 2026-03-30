@@ -3,8 +3,14 @@ const express = require('express');
 const router = express.Router();
 const expenseController = require('../controllers/expenseController');
 
-router.get('/expenses', expenseController.showExpensesPage);
+router.get('/expenses', expenseController.showExpensePage);
 router.post('/expense-categories', expenseController.createExpenseCategory);
+router.post('/expense-categories/:id/delete', expenseController.deleteExpenseCategory);
+router.get('/expense-categories/:id/edit', expenseController.showEditExpensePage);
+router.post('/expense-categories/:id/edit', expenseController.updateExpenseCategory);
 router.get('/api/expense-categories', expenseController.getExpenseCategoriesApi);
+
+router.post('/fixed-term-expenses', expenseController.createFixedTermExpense);
+router.get('/api/fixed-term-expenses', expenseController.getFixedTermExpensesApi);
 
 module.exports = router;

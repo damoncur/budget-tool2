@@ -1,23 +1,59 @@
 body {
 }
 
-label {
-  display: block;
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.nav-bar {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-bar a {
+  text-decoration: none;
+  color: #333;
   font-weight: bold;
-  margin-bottom: 6px;
+  padding: 6px 12px;
+  border-radius: 4px;
+}
+
+.nav-bar a:hover {
+  background: #f0f0f0;
+}
+
+.nav-bar a.active {
+  background: #333;
+  color: #fff;
+}
+
+label {
+  display: inline-block;
+  font-weight: bold;
+  margin-bottom: 0;
+  min-width: 120px;
+  flex-shrink: 0;
 }
 
 input,
-select,
-button {
-  width: 100%;
-  padding: 10px;
+select {
+  flex: 1;
+  padding: 6px 8px;
   font-size: 14px;
   box-sizing: border-box;
+  width: auto;
 }
 
 button {
-  margin-top: 12px;
+  width: auto;
+  padding: 8px 20px;
+  margin-top: 8px;
   cursor: pointer;
 }
 
@@ -35,12 +71,31 @@ table {
 th,
 td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 6px 8px;
   text-align: left;
 }
 
 th {
   background: #f0f0f0;
+}
+
+th[data-sortable] {
+  cursor: pointer;
+  user-select: none;
+}
+
+th[data-sortable]:hover {
+  background: #e0e0e0;
+}
+
+.sort-arrow {
+  font-size: 12px;
+  color: #999;
+}
+
+th.sort-asc .sort-arrow,
+th.sort-desc .sort-arrow {
+  color: #333;
 }
 
 .summary {
@@ -49,4 +104,152 @@ th {
   padding: 12px;
   background: #f7f7f7;
   border-radius: 8px;
+}
+
+.summary-separator {
+  margin: 0 12px;
+  color: #ccc;
+}
+
+.net-positive {
+  color: #16a34a;
+}
+
+.net-negative {
+  color: #dc2626;
+}
+
+.asset-row {
+  background: #f0f7ff;
+  font-style: italic;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 13px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  width: auto;
+}
+
+.btn-edit {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-edit:hover {
+  background: #1d4ed8;
+}
+
+.btn-delete {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background: #b91c1c;
+}
+
+.btn-cancel {
+  display: inline-block;
+  margin-top: 12px;
+  margin-left: 8px;
+  padding: 10px 16px;
+  background: #6b7280;
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.btn-cancel:hover {
+  background: #4b5563;
+}
+
+#asset-fields {
+  margin-top: 12px;
+}
+
+.rate-details {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.expense-funded {
+  color: #666;
+  font-style: italic;
+}
+
+.duration-indefinite {
+  color: #2a7;
+}
+
+.duration-finite {
+  color: #a72;
+}
+
+.asset-projection-summary {
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+tr.matured {
+  opacity: 0.5;
+}
+
+tr.matured td {
+  text-decoration: line-through;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-row .field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.chart-container {
+  max-width: 900px;
+  margin: 0 auto;
+  height: 400px;
+  position: relative;
+}
+
+.forecast-controls {
+  margin-bottom: 12px;
+}
+
+.forecast-controls .field {
+  max-width: 400px;
+}
+
+.forecast-controls input[type="range"] {
+  flex: 1;
+}
+
+.forecast-controls span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
 }
