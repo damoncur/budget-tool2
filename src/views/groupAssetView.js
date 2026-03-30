@@ -83,6 +83,7 @@ function renderAssetsPage(groupAssets, totalValue, projection) {
         <a href="/">Income</a>
         <a href="/expenses">Expenses</a>
         <a href="/assets" class="active">Assets</a>
+        <a href="/forecast">Forecast</a>
       </nav>
       <main>
         <h1>Group Assets</h1>
@@ -171,6 +172,7 @@ function renderEditAssetPage(item) {
         <a href="/">Income</a>
         <a href="/expenses">Expenses</a>
         <a href="/assets" class="active">Assets</a>
+        <a href="/forecast">Forecast</a>
       </nav>
       <main>
         <h1>Edit Group Asset</h1>

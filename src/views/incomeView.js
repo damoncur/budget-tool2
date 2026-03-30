@@ -83,6 +83,7 @@ function renderHomePage(incomeCategories, totalMonthlyIncome, totalMonthlyExpens
         <a href="/" class="active">Income</a>
         <a href="/expenses">Expenses</a>
         <a href="/assets">Assets</a>
+        <a href="/forecast">Forecast</a>
       </nav>
       <main>
         <h1>Monthly Income</h1>
@@ -416,6 +417,7 @@ function renderEditIncomePage(item) {
         <a href="/" class="active">Income</a>
         <a href="/expenses">Expenses</a>
         <a href="/assets">Assets</a>
+        <a href="/forecast">Forecast</a>
       </nav>
       <main>
         <h1>Edit Income Category</h1>
